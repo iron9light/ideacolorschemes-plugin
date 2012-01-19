@@ -3,7 +3,7 @@
   <component name="DBNavigator.Module.ConnectionManager">
     <connections />
   </component>
-  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/src/resources/META-INF/plugin.xml" />
+  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/META-INF/plugin.xml" />
   <component name="FacetManager">
     <facet type="scala" name="Scala">
       <configuration>
