@@ -1,5 +1,5 @@
 <idea-plugin version="2">
-  <name>ideacolor</name>
+  <name>Color</name>
   <description>Export all color setting pages information.</description>
   <version>0.1</version>
   <vendor>ideacolorscheme.com</vendor>
