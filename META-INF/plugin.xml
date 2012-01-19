@@ -1,0 +1,40 @@
+<idea-plugin version="2">
+  <name>ideacolor</name>
+  <description>Export all color setting pages information.</description>
+  <version>0.1</version>
+  <vendor>ideacolorscheme.com</vendor>
+  <idea-version since-build="107.105"/>
+
+  <application-components>
+    <!-- Add your application components here -->
+    <!--<component>-->
+      <!--<interface-class>com.ideacolorschemes.ideacolor.ColorSchemeManager</interface-class>-->
+      <!--<implementation-class>com.ideacolorschemes.ideacolor.impl.Db4oColorSchemeManager</implementation-class>-->
+    <!--</component>-->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+    <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
+            class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
+      <add-to-group group-id="FileMenu" anchor="after" relative-to-action="ExportImportGroup"/>
+    </action>
+    <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme"
+            class="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme" text="Upload current color scheme">
+      <add-to-group group-id="FileMenu" anchor="after" relative-to-action="ExportImportGroup"/>
+    </action>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceInterface="com.ideacolorschemes.ideacolor.UserSettings"
+                        serviceImplementation="com.ideacolorschemes.ideacolor.UserSettings"/>
+    <applicationConfigurable instance="com.ideacolorschemes.ideacolor.ui.IdeaColorSettingsConfigurable"/>
+    <applicationService serviceInterface="com.ideacolorschemes.ideacolor.ColorSchemeManager"
+                        serviceImplementation="com.ideacolorschemes.ideacolor.impl.HawtColorSchemeManager"/>
+    <!--<postStartupActivity implementation="com.ideacolorschemes.ideacolor.LoadColorSchemeBooks"/>-->
+  </extensions>
+</idea-plugin>
