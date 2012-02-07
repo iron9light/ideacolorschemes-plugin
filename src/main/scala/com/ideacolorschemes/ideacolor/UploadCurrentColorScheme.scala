@@ -18,15 +18,11 @@ import org.apache.commons.httpclient.{UsernamePasswordCredentials, HttpStatus, H
 class UploadCurrentColorScheme extends AnAction {
   def actionPerformed(anActionEvent: AnActionEvent) {
     val editorColorsScheme = EditorColorsManager.getInstance.getGlobalScheme
+    // TODO: check if it's default.
     val colorScheme = ColorSchemeParser.parse(editorColorsScheme).get
     val json = Serialization.write(colorScheme)(ColorSchemeFormats)
     val httpClient = new HttpClient()
-    httpClient.getState.setCredentials(
-      new AuthScope("localhost", 8080, "api"),
-      new UsernamePasswordCredentials(UserManager.userId, UserManager.key)
-    )
-    val httpPost = new PostMethod("http://localhost:8080/api/auth/addscheme")
-    httpPost.setDoAuthentication(true)
+    val httpPost = new PostMethod("http://localhost:8080/api/addscheme")
     httpPost.setRequestEntity(new StringRequestEntity(json, "text/json", "UTF-8"))
     try {
       httpClient.executeMethod(httpPost)
