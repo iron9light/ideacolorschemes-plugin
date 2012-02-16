@@ -11,7 +11,7 @@ import javax.swing.Icon
 
 class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   private var settingsPanel: Option[IdeaColorSettingsPanel] = None
-  private val settings = UserManager.userSettings
+  private val userManager: UserManager = UserManager
 
   def getDisplayName = "IdeaColorSchemes"
 
@@ -20,16 +20,20 @@ class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   def getHelpTopic = null
 
   def createComponent = {
-    if (settingsPanel.isEmpty) {
-      settingsPanel = Some(new IdeaColorSettingsPanel)
+    settingsPanel match {
+      case Some(panel) =>
+        reset()
+        panel.getPanel
+      case None =>
+        val panel = new IdeaColorSettingsPanel
+        settingsPanel = Some(panel)
+        panel.getPanel
     }
-    reset()
-    settingsPanel.get.getPanel
   }
 
   def isModified = {
     settingsPanel match {
-      case Some(panel) if panel.getUserId != settings.userId || panel.getKey != settings.key =>
+      case Some(panel) if panel.getUserId != userManager.userId || panel.getKey != userManager.key =>
         true
       case _ =>
         false
@@ -39,8 +43,8 @@ class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   def apply() {
     settingsPanel.foreach {
       panel => {
-        settings.userId = panel.getUserId
-        settings.key = panel.getKey
+        userManager.userId = panel.getUserId
+        userManager.key = panel.getKey
       }
     }
   }
@@ -48,8 +52,8 @@ class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   def reset() {
     settingsPanel.foreach{
       panel => {
-        panel.setUserId(settings.userId)
-        panel.setKey(settings.key)
+        panel.setUserId(userManager.userId)
+        panel.setKey(userManager.key)
       }
     }
   }

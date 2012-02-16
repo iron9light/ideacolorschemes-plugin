@@ -20,7 +20,15 @@ object UserManager extends UserManager {
 
   def userId = userSettings.userId
 
+  def userId_=(value: String) {
+    userSettings.userId = value
+  }
+
   def key = userSettings.key
+
+  def key_=(value: String) {
+    userSettings.key = value
+  }
 }
 
 @State(name = "IdeaColorSchemesSettings", storages = Array(new Storage(id = "default", file = "$APP_CONFIG$/ideacolorschemes_settings.xml")))
