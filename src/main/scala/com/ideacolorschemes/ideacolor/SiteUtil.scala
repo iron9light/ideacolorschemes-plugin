@@ -1,6 +1,6 @@
 package com.ideacolorschemes.ideacolor
 
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.{ProjectManager, Project}
 import actors.Actor
 import com.intellij.openapi.progress.{Task, ProgressIndicator, ProgressManager}
 import org.apache.commons.httpclient.auth.AuthScope
@@ -20,7 +20,7 @@ object SiteUtil {
   
   def testConnection(userId: String, key: String): Boolean = {
     val client = getHttpClient(userId, key)
-    val uri = "http://localhost:8080/api/auth/check"
+    val uri = httpHost + "/api/auth/check"
     val method = new GetMethod(uri)
     try {
       client.executeMethod(method)
@@ -46,7 +46,7 @@ object SiteUtil {
     }
   }
   
-  def accessToSiteWithModalProgress[T](func: => T)(project: Project): T = {
+  def accessToSiteWithModalProgress[T](func: => T)(implicit project: Project = ProjectManager.getInstance.getDefaultProject): T = {
     val me = Actor.self
     ProgressManager.getInstance().run(new Task.Modal(project, "Access to ideacolorschemes", true) {
       def run(indicator: ProgressIndicator) {
@@ -59,4 +59,9 @@ object SiteUtil {
         result
     }
   }
+
+  /***
+   * For java only, use [[com.ideacolorschemes.ideacolor.httpHost]] in scala
+   */
+  def httpHost = com.ideacolorschemes.ideacolor.httpHost
 }

@@ -1,16 +1,12 @@
 package com.ideacolorschemes.ideacolor
 
 import com.intellij.openapi.actionSystem.{AnActionEvent, AnAction}
-import com.intellij.openapi.options.colors.{ColorSettingsPages, ColorSettingsPage}
+import com.intellij.openapi.options.colors.ColorSettingsPages
 import javax.swing.JFileChooser
 import net.liftweb.json.Serialization
 import com.intellij.openapi.ui.Messages
 import java.io.{FileWriter, File}
 import com.ideacolorschemes.commons.json.{ColorSchemeFormats, ColorSettingsPageObjectFormats}
-import com.intellij.openapi.components.PathMacroManager
-import com.intellij.openapi.components.impl.BasePathMacroManager
-import com.intellij.openapi.application.{PathManager, ApplicationManager}
-import com.ideacolorschemes.commons.entities.{Version, ColorSchemeId}
 
 
 /**
@@ -23,13 +19,6 @@ class ExportColorSettingsAction extends AnAction {
   private val COLOR_SCHEMES_FILE_NAME = "DefaultColorSchemes.json"
 
   def actionPerformed(anActionEvent: AnActionEvent) {
-//    val macroManager: PathMacroManager = PathMacroManager.getInstance(ApplicationManager.getApplication)
-//
-//    Messages.showInfoMessage(ColorSchemeManager().get(ColorSchemeId("iron9light@ideacolorschemes.com", "Solarized Dark coffee", Version("1.1"), "Java")).toString, "")
-//    SchemeBookManager.addBooks()
-    Sandbox.run()
-    return
-
     val chooser = new JFileChooser
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
     chooser.setAcceptAllFileFilterUsed(false)

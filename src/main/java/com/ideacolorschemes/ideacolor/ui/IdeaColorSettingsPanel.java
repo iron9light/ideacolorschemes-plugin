@@ -27,7 +27,7 @@ public class IdeaColorSettingsPanel {
             }
         });
         signupTextField.setText(
-          "<html>Do not have an account at ideacolorscheme.com? <a href=\"http://localhost:8080\">Sign up</a></html>"
+          "<html>Do not have an account at ideacolorscheme.com? <a href=\"" + SiteUtil.httpHost() + "\">Sign up</a></html>"
         );
         signupTextField.setBackground(panel.getBackground());
         signupTextField.setCursor(new Cursor(Cursor.HAND_CURSOR));
