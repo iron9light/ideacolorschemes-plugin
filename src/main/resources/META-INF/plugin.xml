@@ -19,14 +19,19 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
-            class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
-      <add-to-group group-id="FileMenu" anchor="after" relative-to-action="ExportImportGroup"/>
-    </action>
-    <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme"
-            class="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme" text="Upload current color scheme">
-      <add-to-group group-id="FileMenu" anchor="after" relative-to-action="ExportImportGroup"/>
-    </action>
+    <group id="com.ideacolorschemes.ideacolor.ColorActions" text="Color" popup="true">
+      <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
+              class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
+      </action>
+      <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme"
+              class="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme" text="Upload current color scheme">
+      </action>
+    </group>
+    <group id="com.ideacolorschemes.ideacolor.ColorGroup" text="Color menu">
+      <reference ref="com.ideacolorschemes.ideacolor.ColorActions"/>
+      <separator/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </group>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
