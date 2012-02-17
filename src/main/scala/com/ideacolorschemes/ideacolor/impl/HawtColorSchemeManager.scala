@@ -2,7 +2,6 @@ package com.ideacolorschemes.ideacolor
 package impl
 
 import com.ideacolorschemes.commons.entities._
-import com.intellij.openapi.application.PathManager
 import java.io.File
 import com.intellij.openapi.Disposable
 import com.ideacolorschemes.commons.bson.ColorSchemeIdParser
@@ -12,7 +11,6 @@ import com.google.common.primitives.UnsignedBytes
 
 /**
  * @author il
- * @version 11/9/11 7:31 PM
  */
 
 class HawtColorSchemeManager extends ColorSchemeManager with Disposable {
@@ -35,8 +33,7 @@ class HawtColorSchemeManager extends ColorSchemeManager with Disposable {
     com.ideacolorschemes.commons.bson.ColorSchemeParser.fromBson(bsonDecoder.readObject(bytes))
   }
 
-
-  val path = PathManager.getOptionsPath + File.separatorChar + "ideacolor.db"
+  val path = ideaConfigFolder + "scheme.db"
 
   val factory = new PageFileFactory
   factory.setFile(new File(path))

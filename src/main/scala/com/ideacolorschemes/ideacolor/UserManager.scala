@@ -31,7 +31,7 @@ object UserManager extends UserManager {
   }
 }
 
-@State(name = "IdeaColorSchemesSettings", storages = Array(new Storage(id = "default", file = "$APP_CONFIG$/ideacolorschemes_settings.xml")))
+@State(name = "IdeaColorSchemesSettings", storages = Array(new Storage(id = "default", file = "$APP_CONFIG$/" + configFolder +"/settings.xml")))
 class UserSettings extends PersistentStateComponent[UserSettings] {
   @BeanProperty
   var userId: String = ""
