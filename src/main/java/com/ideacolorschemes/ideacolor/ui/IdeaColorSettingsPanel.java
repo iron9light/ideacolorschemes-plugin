@@ -1,9 +1,6 @@
 package com.ideacolorschemes.ideacolor.ui;
 
-import com.ideacolorschemes.ideacolor.SiteUtil;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.HyperlinkAdapter;
 
 import javax.swing.*;
@@ -12,7 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class IdeaColorSettingsPanel {
+public class IdeaColorSettingsPanel extends IdeaColorSettingsPanelUtil {
     private JTextField userIdTextField;
     private JTextField keyTextField;
     private JPanel panel;
@@ -26,20 +23,14 @@ public class IdeaColorSettingsPanel {
                 BrowserUtil.launchBrowser(e.getURL().toExternalForm());
             }
         });
-        signupTextField.setText(
-          "<html>Do not have an account at ideacolorscheme.com? <a href=\"" + SiteUtil.httpHost() + "\">Sign up</a></html>"
-        );
+        signupTextField.setText(noticeTest());
         signupTextField.setBackground(panel.getBackground());
         signupTextField.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         testButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(SiteUtil.checkCredentials(getUserId(), getKey(), ProjectManager.getInstance().getDefaultProject())) {
-                    Messages.showInfoMessage("Connection successful", "Success");
-                } else {
-                    Messages.showErrorDialog("Cannot login to the ideacolorscheme using given credentials", "Failure");
-                }
+                checkCredentialsAction();
             }
         });
     }
@@ -48,6 +39,7 @@ public class IdeaColorSettingsPanel {
         return panel;
     }
 
+    @Override
     public String getUserId() {
         return userIdTextField.getText().trim();
     }
@@ -55,7 +47,8 @@ public class IdeaColorSettingsPanel {
     public void setUserId(final String userId) {
         userIdTextField.setText(userId);
     }
-    
+
+    @Override
     public String getKey() {
         return keyTextField.getText().trim();
     }

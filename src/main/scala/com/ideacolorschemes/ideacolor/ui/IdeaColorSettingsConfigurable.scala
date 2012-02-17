@@ -11,7 +11,7 @@ import javax.swing.Icon
 
 class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   private var settingsPanel: Option[IdeaColorSettingsPanel] = None
-  private val userManager: UserManager = UserManager
+  private val userManager = UserManager
 
   def getDisplayName = "IdeaColorSchemes"
 
