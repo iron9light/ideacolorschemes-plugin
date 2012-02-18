@@ -7,10 +7,9 @@
 
   <application-components>
     <!-- Add your application components here -->
-    <!--<component>-->
-      <!--<interface-class>com.ideacolorschemes.ideacolor.ColorSchemeManager</interface-class>-->
-      <!--<implementation-class>com.ideacolorschemes.ideacolor.impl.Db4oColorSchemeManager</implementation-class>-->
-    <!--</component>-->
+    <component>
+      <implementation-class>com.ideacolorschemes.ideacolor.SchemeBookComponent</implementation-class>
+    </component>
   </application-components>
 
   <project-components>
@@ -40,6 +39,5 @@
     <applicationConfigurable instance="com.ideacolorschemes.ideacolor.ui.IdeaColorSettingsConfigurable"/>
     <applicationService serviceInterface="com.ideacolorschemes.ideacolor.ColorSchemeManager"
                         serviceImplementation="com.ideacolorschemes.ideacolor.impl.HawtColorSchemeManager"/>
-    <!--<postStartupActivity implementation="com.ideacolorschemes.ideacolor.LoadColorSchemeBooks"/>-->
   </extensions>
 </idea-plugin>

@@ -8,11 +8,12 @@ import java.net.URLEncoder
 import java.io.InputStreamReader
 import net.liftweb.json._
 import com.ideacolorschemes.commons.json.ColorSchemeFormats
+import util.Loggable
 
 /**
  * @author il
  */
-object SiteServices {
+object SiteServices extends Loggable {
   implicit val formats = ColorSchemeFormats
 
   def checkAuth(userId: String, key: String): Boolean = {
@@ -37,7 +38,7 @@ object SiteServices {
   def addScheme(colorScheme: ColorScheme) = {
     val json = Serialization.write(colorScheme)
     val httpClient = new HttpClient()
-    val httpPost = new PostMethod("http://localhost:8080/api/addscheme")
+    val httpPost = new PostMethod(httpHost + "/api/addscheme")
     httpPost.setRequestEntity(new StringRequestEntity(json, "text/json", "UTF-8"))
     try {
       httpClient.executeMethod(httpPost)
@@ -59,7 +60,7 @@ object SiteServices {
 
   def scheme(id: ColorSchemeId): Option[ColorScheme] = {
     def urlEncode(s: String) = URLEncoder.encode(s, "UTF-8")
-    val url = "http://localhost:8080/api/scheme/%s/%s/%s/%s".format(urlEncode(id.author), urlEncode(id.name), urlEncode(id.version.toString()), urlEncode(id.target))
+    val url = httpHost + "/api/scheme/%s/%s/%s/%s".format(urlEncode(id.author), urlEncode(id.name), urlEncode(id.version.toString()), urlEncode(id.target))
     val httpClient = new HttpClient
     val method = new GetMethod(url)
     try {
@@ -77,7 +78,7 @@ object SiteServices {
   
   def schemeBookNames(implicit userManager: UserManager = UserManager) = {
     val httpClient = getHttpClient
-    val httpGet = new GetMethod("http://localhost:8080/api/auth/schemebooknames")
+    val httpGet = new GetMethod(httpHost + "/api/auth/schemebooknames")
     val responseStr = try {
       httpClient.executeMethod(httpGet)
       Some(httpGet.getResponseBodyAsString)

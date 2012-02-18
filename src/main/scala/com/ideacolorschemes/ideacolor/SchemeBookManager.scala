@@ -33,5 +33,3 @@ class SchemeBookManager {
     }
   }
 }
-
-object SchemeBookManager extends SchemeBookManager

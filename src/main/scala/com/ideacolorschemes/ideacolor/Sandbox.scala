@@ -21,7 +21,7 @@ object Sandbox {
 //    } {
 //      println("%s[%s] - %s" format (scheme, manager.isDefaultScheme(scheme), scheme.getClass))
 //    }
-    SchemeBookManager.addBooks()
+//    SchemeBookManager.addBooks()
 //    val editorColorsManager = EditorColorsManager.getInstance()
 //    editorColorsManager.addColorsScheme(new MockEditorColorScheme("mock"))
   }
