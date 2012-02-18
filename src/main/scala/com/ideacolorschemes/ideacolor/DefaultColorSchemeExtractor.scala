@@ -5,7 +5,7 @@ import java.awt.Color
 import com.intellij.application.options.colors.ColorSettingsUtil
 import com.ideacolorschemes.commons.entities._
 import com.ideacolorschemes.commons.Implicits._
-import com.intellij.openapi.editor.colors.{EditorColorsManager, EditorColorsScheme}
+import com.intellij.openapi.editor.colors.{ColorKey, EditorColorsManager, EditorColorsScheme}
 import com.intellij.openapi.options.colors.ColorSettingsPage
 
 object DefaultColorSchemeExtractor {
@@ -45,9 +45,17 @@ object DefaultColorSchemeExtractor {
   }
 
   def extractColors(page: ColorSettingsPage) = {
+    val defaultScheme = EditorColorsManager.getInstance().getScheme(EditorColorsScheme.DEFAULT_SCHEME_NAME)
+    def getDefaultColor(key: ColorKey) = {
+      Option(key.getDefaultColor) match {
+        case None =>
+          Option(defaultScheme.getColor(key))
+        case color => color
+      }
+    }
     (for {
       colorDescriptor <- page.getColorDescriptors
-      color <- Option(colorDescriptor.getKey.getDefaultColor)
+      color <- getDefaultColor(colorDescriptor.getKey)
     } yield (colorDescriptor.getKey.getExternalName, color2int(color))).toMap
   }
 
