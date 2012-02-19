@@ -34,10 +34,12 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <applicationService serviceInterface="com.ideacolorschemes.ideacolor.UserSettings"
-                        serviceImplementation="com.ideacolorschemes.ideacolor.UserSettings"/>
+    <applicationService serviceInterface="com.ideacolorschemes.ideacolor.IdeaSettings"
+                        serviceImplementation="com.ideacolorschemes.ideacolor.IdeaSettings"/>
     <applicationConfigurable instance="com.ideacolorschemes.ideacolor.ui.IdeaColorSettingsConfigurable"/>
     <applicationService serviceInterface="com.ideacolorschemes.ideacolor.ColorSchemeManager"
                         serviceImplementation="com.ideacolorschemes.ideacolor.impl.HawtColorSchemeManager"/>
+    <applicationService serviceInterface="com.ideacolorschemes.ideacolor.SchemeBookManager"
+                        serviceImplementation="com.ideacolorschemes.ideacolor.impl.HawtSchemeBookManager"/>
   </extensions>
 </idea-plugin>

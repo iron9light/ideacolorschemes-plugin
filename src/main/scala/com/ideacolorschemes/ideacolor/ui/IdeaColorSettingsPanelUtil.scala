@@ -5,7 +5,6 @@ import com.intellij.openapi.ui.Messages
 import com.ideacolorschemes.ideacolor.SiteServices
 import com.intellij.openapi.project.{Project, ProjectManager}
 import com.ideacolorschemes.ideacolor.SiteUtil._
-import com.intellij.openapi.progress.ProgressManager
 
 /**
  * @author il
@@ -31,8 +30,10 @@ abstract class IdeaColorSettingsPanelUtil {
       false
     else {
       accessToSiteWithModalProgress {
-        ProgressManager.getInstance().getProgressIndicator.setText("Trying to login to ideacolorschemes")
-        SiteServices.checkAuth(userId, key)
+        indicator => {
+          indicator.setText("Trying to login to ideacolorschemes")
+          SiteServices.checkAuth(userId, key)
+        }
       }(project)
     }
   }

@@ -8,11 +8,11 @@ import com.intellij.openapi.progress.{Task, ProgressIndicator, ProgressManager}
  * @author il
  */
 object SiteUtil {
-  def accessToSiteWithModalProgress[T](func: => T)(implicit project: Project = ProjectManager.getInstance.getDefaultProject): T = {
+  def accessToSiteWithModalProgress[T](func: ProgressIndicator => T)(implicit project: Project = ProjectManager.getInstance.getDefaultProject): T = {
     val me = Actor.self
     ProgressManager.getInstance().run(new Task.Modal(project, "Access to ideacolorschemes", true) {
       def run(indicator: ProgressIndicator) {
-        me ! func 
+        me ! func(indicator)
       }
     })
     

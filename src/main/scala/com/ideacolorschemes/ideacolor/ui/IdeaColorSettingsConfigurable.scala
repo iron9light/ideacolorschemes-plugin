@@ -43,8 +43,7 @@ class IdeaColorSettingsConfigurable extends SearchableConfigurable {
   def apply() {
     settingsPanel.foreach {
       panel => {
-        userManager.userId = panel.getUserId
-        userManager.key = panel.getKey
+        userManager.update(panel.getUserId, panel.getKey)
       }
     }
   }

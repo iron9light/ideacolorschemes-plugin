@@ -9,6 +9,7 @@ import java.io.InputStreamReader
 import net.liftweb.json._
 import com.ideacolorschemes.commons.json.ColorSchemeFormats
 import util.Loggable
+import java.util.Date
 
 /**
  * @author il
@@ -75,7 +76,8 @@ object SiteServices extends Loggable {
       method.releaseConnection()
     }
   }
-  
+
+  private case class NameAndTimestamp(name: String, timestamp: Long)
   def schemeBookNames(implicit userManager: UserManager = UserManager) = {
     val httpClient = getHttpClient
     val httpGet = new GetMethod(httpHost + "/api/auth/schemebooknames")
@@ -91,7 +93,15 @@ object SiteServices extends Loggable {
       httpGet.releaseConnection()
     }
     
-    responseStr.flatMap(parseOpt)
+    responseStr.flatMap(parseOpt).map {
+      case JArray(list: List[JObject]) =>
+        list.flatMap(_.extractOpt[NameAndTimestamp]).map {
+          case NameAndTimestamp(name, timestamp) =>
+            (name, new Date(timestamp))
+        }
+      case _ =>
+        Nil
+    }.getOrElse(Nil)
   }
   
   def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager) = {

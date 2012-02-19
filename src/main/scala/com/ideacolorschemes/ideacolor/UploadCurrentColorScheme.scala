@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.{AnActionEvent, AnAction}
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.progress.ProgressManager
 
 
 /**
@@ -26,8 +25,10 @@ class UploadCurrentColorScheme extends AnAction {
   def updateScheme(editorColorsScheme: EditorColorsScheme) {
     val colorScheme = ColorSchemeParser.parse(editorColorsScheme).get
     SiteUtil.accessToSiteWithModalProgress {
-      ProgressManager.getInstance().getProgressIndicator.setText("Trying to update current color scheme to ideacolorschemes")
-      SiteServices.addScheme(colorScheme)
+      indicator => {
+        indicator.setText("Trying to update current color scheme to ideacolorschemes")
+        SiteServices.addScheme(colorScheme)
+      }
     } match {
       case Some(url) =>
         BrowserUtil.launchBrowser(url)
