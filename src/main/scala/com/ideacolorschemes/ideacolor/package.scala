@@ -7,7 +7,7 @@ import java.io.File
  * @author il
  */
 package object ideacolor {
-  val host = "localhost:8080"
+  val host = "ideacolorschemes.com"
 
   val httpHost = "http://" + host
 

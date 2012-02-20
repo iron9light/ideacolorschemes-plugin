@@ -19,9 +19,9 @@
   <actions>
     <!-- Add your actions here -->
     <group id="com.ideacolorschemes.ideacolor.ColorActions" text="Color" popup="true">
-      <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
+      <!-- <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
               class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
-      </action>
+      </action> -->
       <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction"
               class="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction" text="Upload current color scheme">
       </action>
