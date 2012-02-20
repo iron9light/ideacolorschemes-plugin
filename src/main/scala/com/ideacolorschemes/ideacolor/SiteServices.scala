@@ -1,140 +1,103 @@
 package com.ideacolorschemes.ideacolor
 
-import org.apache.commons.httpclient.methods.{StringRequestEntity, PostMethod, GetMethod}
-import org.apache.commons.httpclient.auth.AuthScope
-import org.apache.commons.httpclient.{UsernamePasswordCredentials, HttpClient, HttpStatus}
 import com.ideacolorschemes.commons.entities.{ColorScheme, ColorSchemeId}
-import java.net.URLEncoder
-import java.io.InputStreamReader
 import net.liftweb.json._
 import com.ideacolorschemes.commons.json.ColorSchemeFormats
 import util.Loggable
 import java.util.Date
+import dispatch._
 
 /**
  * @author il
  */
 object SiteServices extends Loggable {
   implicit val formats = ColorSchemeFormats
+  
+  private val h = {
+    val ss = host.split(":")
+    if (ss.length > 1) {
+      :/(ss(0), ss(1).toInt)
+    } else {
+      :/(host)
+    }
+  }
+  
+  private val noRedirectHttp = new Http {
+    import org.apache.http.impl.client.DefaultRedirectStrategy
+    import org.apache.http.{HttpResponse, HttpRequest}
+    import org.apache.http.protocol.HttpContext
 
-  def checkAuth(userId: String, key: String): Boolean = {
-    val client = getHttpClient(userId, key)
-    val uri = httpHost + "/api/auth/check"
-    val method = new GetMethod(uri)
-    try {
-      client.executeMethod(method)
-      method.getStatusCode match {
-        case HttpStatus.SC_OK => true
-        case _ => false
-      }
-    } catch {
-      case e =>
-        // todo: add log
-        false
-    } finally {
-      method.releaseConnection()
+    override def make_client = {
+      val client = super.make_client.asInstanceOf[ConfiguredHttpClient]
+      client.setRedirectStrategy(new DefaultRedirectStrategy{
+        override def isRedirected(req: HttpRequest, res: HttpResponse, ctx: HttpContext) = false
+      })
+      client
     }
   }
 
-  def addScheme(colorScheme: ColorScheme) = {
-    val json = Serialization.write(colorScheme)
-    val httpClient = new HttpClient()
-    val httpPost = new PostMethod(httpHost + "/api/addscheme")
-    httpPost.setRequestEntity(new StringRequestEntity(json, "text/json", "UTF-8"))
+  def checkAuth(userId: String, key: String): Boolean = {
     try {
-      httpClient.executeMethod(httpPost)
-      if (httpPost.getStatusCode == HttpStatus.SC_SEE_OTHER) {
-        val url = httpHost + httpPost.getResponseHeader("Location").getValue
-        Some(url)
-      } else {
-        // todo: add log
-        None
-      }
+      Http((h / "api" / "auth" / "check" as_! (userId, key)).>|.~>{_ => true})
     } catch {
-      case e =>
-        // todo: add log
-        None
-    } finally {
-      httpPost.releaseConnection()
+      case _ => false
+    }
+  }
+
+  def addScheme(colorScheme: ColorScheme): Option[String] = {
+    val json = Serialization.write(colorScheme)
+
+    try {
+      noRedirectHttp.when(_ == org.apache.http.HttpStatus.SC_SEE_OTHER)((h / "api" / "addscheme") << (json, "text/json") >\ "UTF-8" >:> {
+        head => head.get("Location").flatMap(_.headOption).map(httpHost + _)
+      })
+    } catch {
+      case _ => None
     }
   }
 
   def scheme(id: ColorSchemeId): Option[ColorScheme] = {
-    def urlEncode(s: String) = URLEncoder.encode(s, "UTF-8")
-    val url = httpHost + "/api/scheme/%s/%s/%s/%s".format(urlEncode(id.author), urlEncode(id.name), urlEncode(id.version.toString()), urlEncode(id.target))
-    val httpClient = new HttpClient
-    val method = new GetMethod(url)
     try {
-      httpClient.executeMethod(method)
-      val reader = new InputStreamReader(method.getResponseBodyAsStream, "UTF-8")
-      JsonParser.parse(reader).extractOpt[ColorScheme]
+      Http((h / "api" / "scheme" / id.author / id.name / id.version.toString / id.target).gzip >>~ {
+        reader => {
+          JsonParser.parseOpt(reader).flatMap(_.extractOpt[ColorScheme])
+        }
+      })
     } catch {
-      case e =>
-        // todo: add log
-        None
-    } finally {
-      method.releaseConnection()
+      case _ => None
     }
   }
 
   private case class NameAndTimestamp(name: String, timestamp: Long)
-  def schemeBookNames(implicit userManager: UserManager = UserManager) = {
-    val httpClient = getHttpClient
-    val httpGet = new GetMethod(httpHost + "/api/auth/schemebooknames")
-    val responseStr = try {
-      httpClient.executeMethod(httpGet)
-      Some(httpGet.getResponseBodyAsString)
-      // todo: should not just return JValue
-    } catch {
-      case e =>
-        // todo: add log
-        None
-    } finally {
-      httpGet.releaseConnection()
-    }
-    
-    responseStr.flatMap(parseOpt).map {
-      case JArray(list: List[JObject]) =>
-        list.flatMap(_.extractOpt[NameAndTimestamp]).map {
-          case NameAndTimestamp(name, timestamp) =>
-            (name, new Date(timestamp))
+  def schemeBookNames(implicit userManager: UserManager = UserManager): List[(String, Date)] = {
+    try {
+      Http((h / "api" / "auth" / "schemebooknames").as_!(userManager.userId, userManager.key).gzip >>~ {
+        reader => {
+          JsonParser.parseOpt(reader).map {
+            case JArray(list: List[JObject]) =>
+              list.flatMap(_.extractOpt[NameAndTimestamp]).map {
+                case NameAndTimestamp(name, timestamp) =>
+                  (name, new Date(timestamp))
+              }
+            case _ =>
+              Nil
+          }.getOrElse(Nil)
         }
-      case _ =>
-        Nil
-    }.getOrElse(Nil)
-  }
-  
-  def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager) = {
-    val httpClient = getHttpClient
-    val httpGet = new GetMethod(httpHost + "/api/auth/schemebook/" + urlEncode(bookName))
-    val responseStr = try {
-      httpClient.executeMethod(httpGet)
-      Some(httpGet.getResponseBodyAsString)
+      })
     } catch {
-      case e =>
-        // todo: add log
-        None
-    } finally {
-      httpGet.releaseConnection()
+      case _ => Nil
     }
-
-    responseStr.flatMap {
-      str => {
-        parseOpt(str).flatMap(_.extractOpt[List[ColorSchemeId]])
-      }
-    }.getOrElse(Nil)
   }
   
-  private def getHttpClient(implicit userManager: UserManager): HttpClient = {
-    getHttpClient(userManager.userId, userManager.key)
+  def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager): List[ColorSchemeId] = {
+    try {
+      Http((h / "api" / "auth" / "schemebook" / bookName).as_!(userManager.userId, userManager.key).gzip >>~ {
+        reader => {
+          JsonParser.parseOpt(reader).flatMap(_.extractOpt[List[ColorSchemeId]]).getOrElse(Nil)
+        }
+      })
+    } catch {
+      case _ => Nil
+    }
   }
-
-  private def getHttpClient(userId: String, key: String): HttpClient = {
-    val client = new HttpClient
-    client.getParams.setAuthenticationPreemptive(true)
-    client.getState.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(userId, key))
-    client
-  }
-  
-  private def urlEncode(s: String) = URLEncoder.encode(s, "UTF-8")
 }
