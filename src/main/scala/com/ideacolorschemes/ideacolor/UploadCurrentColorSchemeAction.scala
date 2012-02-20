@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.{AnActionEvent, AnAction}
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.project.Project
 
 
 /**
@@ -14,15 +15,16 @@ class UploadCurrentColorSchemeAction extends AnAction {
   def ideaEditorColorsManager = EditorColorsManager.getInstance
   
   def actionPerformed(anActionEvent: AnActionEvent) {
+    implicit val project = anActionEvent.getProject
     val editorColorsScheme = ideaEditorColorsManager.getGlobalScheme
     if (ideaEditorColorsManager.isDefaultScheme(editorColorsScheme)) {
-      Messages.showInfoMessage("Current color scheme is default.", "Failure")
+      Messages.showInfoMessage(project, "Current color scheme is default.", "Failure")
     } else {
       updateScheme(editorColorsScheme)
     }
   }
   
-  def updateScheme(editorColorsScheme: EditorColorsScheme) {
+  def updateScheme(editorColorsScheme: EditorColorsScheme)(implicit project: Project) {
     val colorScheme = ColorSchemeParser.parse(editorColorsScheme).get
     SiteUtil.accessToSiteWithModalProgress {
       indicator => {
@@ -33,7 +35,7 @@ class UploadCurrentColorSchemeAction extends AnAction {
       case Some(url) =>
         BrowserUtil.launchBrowser(url)
       case None =>
-        Messages.showInfoMessage("Cannot update current color scheme to ideacolorschemes.", "Failure")
+        Messages.showInfoMessage(project, "Cannot update current color scheme to ideacolorschemes.", "Failure")
     }
   }
 }
