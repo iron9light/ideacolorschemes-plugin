@@ -10,7 +10,7 @@ import com.intellij.openapi.ui.Messages
  * @author il
  */
 
-class UploadCurrentColorScheme extends AnAction {
+class UploadCurrentColorSchemeAction extends AnAction {
   def ideaEditorColorsManager = EditorColorsManager.getInstance
   
   def actionPerformed(anActionEvent: AnActionEvent) {

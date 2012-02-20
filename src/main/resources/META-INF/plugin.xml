@@ -22,8 +22,8 @@
       <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
               class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
       </action>
-      <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme"
-              class="com.ideacolorschemes.ideacolor.UploadCurrentColorScheme" text="Upload current color scheme">
+      <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction"
+              class="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction" text="Upload current color scheme">
       </action>
     </group>
     <group id="com.ideacolorschemes.ideacolor.ColorGroup" text="Color menu">
