@@ -25,6 +25,9 @@
       <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction"
               class="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction" text="Upload current color scheme">
       </action>
+      <action id="com.ideacolorschemes.ideacolor.UpdateSchemeBooksAction"
+              class="com.ideacolorschemes.ideacolor.UpdateSchemeBooksAction" text="Update color schemes">
+      </action>
     </group>
     <group id="com.ideacolorschemes.ideacolor.ColorGroup" text="Color menu">
       <reference ref="com.ideacolorschemes.ideacolor.ColorActions"/>

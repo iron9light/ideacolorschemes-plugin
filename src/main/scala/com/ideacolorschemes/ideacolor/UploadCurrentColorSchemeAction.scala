@@ -20,11 +20,11 @@ class UploadCurrentColorSchemeAction extends AnAction {
     if (ideaEditorColorsManager.isDefaultScheme(editorColorsScheme)) {
       Messages.showInfoMessage(project, "Current color scheme is default.", "Failure")
     } else {
-      updateScheme(editorColorsScheme)
+      uploadScheme(editorColorsScheme)
     }
   }
   
-  def updateScheme(editorColorsScheme: EditorColorsScheme)(implicit project: Project) {
+  def uploadScheme(editorColorsScheme: EditorColorsScheme)(implicit project: Project) {
     val colorScheme = ColorSchemeParser.parse(editorColorsScheme).get
     SiteUtil.accessToSiteWithModalProgress {
       indicator => {
