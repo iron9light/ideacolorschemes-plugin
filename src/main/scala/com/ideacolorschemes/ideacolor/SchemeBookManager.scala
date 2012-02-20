@@ -4,11 +4,8 @@ import reflect.BeanProperty
 import com.ideacolorschemes.commons.entities.ColorSchemeId
 import java.util.Date
 import com.ideacolorschemes.commons.WithTimestamp
-import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.progress.Task.Backgroundable
-import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager}
-import com.intellij.openapi.project.ProjectManager
 import util.Loggable
 
 /**
@@ -31,42 +28,65 @@ case class UpdateBook(name: String, timestamp: Date) extends ModifyBook
 
 case class DeleteBook(name: String) extends ModifyBook
 
-trait SchemeBookManager extends UserManager.Sub with Loggable {
+trait SchemeBookManager extends Loggable {
   private[this] def bookSetting: BookSetting = ServiceManager.getService(classOf[IdeaSettings])
-  
+
   def currentBook = {
-    Option(bookSetting.currentBook).flatMap(get)
+    Option(bookSetting.currentBook)
   }
-  
+
   def currentBook_=(value: Option[String]) {
     bookSetting.currentBook = value.getOrElse(null)
   }
-  
+
   val editorColorsManager = EditorColorsManager.getInstance()
-  
+
   def get(name: String): Option[SchemeBook]
-  
+
   def getAll: List[SchemeBook]
-  
+
   def remove(name: String)
-  
+
   def removeAll()
-  
+
   def put(schemeBook: SchemeBook)
 
   def contains(name: String): Boolean
 
-  def notify(pub: UserManager.Pub, event: String) {
+  def reset() {
+    unloadAllBookScheme()
+
     removeAll()
 
-    ProgressManager.getInstance().run(new Backgroundable(ProjectManager.getInstance.getDefaultProject, "Update color schemes", false) {
-      def run(indicator: ProgressIndicator) {
-        initUpdate()
-      }
-    })
+    currentBook = None
   }
-  
+
+  def initUpdate() {
+    val modifies = getUpdateModifies
+
+    applyUpdateModifies(modifies)
+
+    loadAllBookScheme()
+  }
+
   def update() = {
+    val modifies = getUpdateModifies
+
+    if (modifies.isEmpty) {
+      false
+    } else {
+      applyUpdateModifies(modifies)
+
+      if (modifies.exists(_.isInstanceOf[DeleteBook])) {
+        unloadAllBookScheme()
+      }
+
+      loadAllBookScheme()
+      true
+    }
+  }
+
+  private def getUpdateModifies = {
     val nameAndTimestamps = SiteServices.schemeBookNames
     val allBooks = getAll
     val modifies = allBooks.flatMap {
@@ -81,17 +101,15 @@ trait SchemeBookManager extends UserManager.Sub with Loggable {
         }
       }
     } ::: nameAndTimestamps.flatMap {
-      case (name, timestamp) if allBooks.forall(_.name != name)=>
+      case (name, timestamp) if allBooks.forall(_.name != name) =>
         Some(UpdateBook(name, timestamp))
       case _ => None
     }
-    
+
     modifies
   }
-  
-  def initUpdate() {
-    val modifies = update()
-    
+
+  private def applyUpdateModifies(modifies: List[ModifyBook]) {
     (for {
       UpdateBook(bookName, timestamp) <- modifies
     } yield {
@@ -105,7 +123,7 @@ trait SchemeBookManager extends UserManager.Sub with Loggable {
         }
       }
     }).par.map(_()).toList
-    
+
     modifies.foreach {
       case DeleteBook(name) =>
         remove(name)
@@ -116,23 +134,38 @@ trait SchemeBookManager extends UserManager.Sub with Loggable {
         }
       case _ =>
     }
-    
-    var currentBookUnset = true
+  }
+
+  private def loadAllBookScheme() {
     for {
       book <- getAll
     } {
       val ideaColorScheme = book2ideaScheme(book)
       editorColorsManager.addColorsScheme(ideaColorScheme)
-      if (currentBookUnset && currentBook.exists(_.name == book.name)) {
+      if (currentBook.exists(_ == book.name)) {
         editorColorsManager.setGlobalScheme(ideaColorScheme)
-        currentBookUnset = false
       }
     }
-    
-    if (currentBookUnset) {
-      currentBook = None
+  }
+
+  private def unloadAllBookScheme() {
+    val currentSchemeName = editorColorsManager.getGlobalScheme.getName
+    val targetSchemeName = if (contains(currentSchemeName)) {
+      EditorColorsScheme.DEFAULT_SCHEME_NAME
+    } else {
+      currentSchemeName
+    }
+    val ideaSchemes = editorColorsManager.getAllSchemes.toList
+    editorColorsManager.removeAllSchemes()
+    for {
+      ideaScheme <- ideaSchemes if !contains(ideaScheme.getName)
+    } {
+      editorColorsManager.addColorsScheme(ideaScheme)
+      if (ideaScheme.getName == targetSchemeName) {
+        editorColorsManager.setGlobalScheme(ideaScheme)
+      }
     }
   }
-  
-  def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(book.name, book.schemeIds)
+
+  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(book.name, book.schemeIds)
 }
