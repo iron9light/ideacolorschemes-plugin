@@ -87,26 +87,29 @@ trait SchemeBookManager extends Loggable with IdeaUtil {
   }
 
   private def getUpdateModifies = {
-    val nameAndTimestamps = SiteServices.schemeBookNames
-    val allBooks = getAll
-    val modifies = allBooks.flatMap {
-      book => {
-        nameAndTimestamps.find(_._1 == book.name) match {
-          case None =>
-            Some(DeleteBook(book.name))
-          case Some((bookName, timestamp)) if timestamp.after(book.timestamp) =>
-            Some(UpdateBook(bookName, timestamp))
-          case _ =>
-            None
+    SiteServices.schemeBookNames match {
+      case None => Nil
+      case Some(nameAndTimestamps) =>
+        val allBooks = getAll
+        val modifies = allBooks.flatMap {
+          book => {
+            nameAndTimestamps.find(_._1 == book.name) match {
+              case None =>
+                Some(DeleteBook(book.name))
+              case Some((bookName, timestamp)) if timestamp.after(book.timestamp) =>
+                Some(UpdateBook(bookName, timestamp))
+              case _ =>
+                None
+            }
+          }
+        } ::: nameAndTimestamps.flatMap {
+          case (name, timestamp) if allBooks.forall(_.name != name) =>
+            Some(UpdateBook(name, timestamp))
+          case _ => None
         }
-      }
-    } ::: nameAndTimestamps.flatMap {
-      case (name, timestamp) if allBooks.forall(_.name != name) =>
-        Some(UpdateBook(name, timestamp))
-      case _ => None
-    }
 
-    modifies
+        modifies
+    }
   }
 
   private def applyUpdateModifies(modifies: List[ModifyBook]) {
@@ -114,12 +117,12 @@ trait SchemeBookManager extends Loggable with IdeaUtil {
       UpdateBook(bookName, timestamp) <- modifies
     } yield {
       () => {
-        val schemeIds = SiteServices.schemeBook(bookName)
-        if (!schemeIds.isEmpty) {
-          val newBook = SchemeBook(bookName, schemeIds, timestamp)
-          put(newBook)
-        } else {
-          // keep the old one
+        SiteServices.schemeBook(bookName) match {
+          case Some(schemeIds) =>
+            val newBook = SchemeBook(bookName, schemeIds, timestamp)
+            put(newBook)
+          case _ =>
+            // keep the old one
         }
       }
     }).par.map(_()).toList

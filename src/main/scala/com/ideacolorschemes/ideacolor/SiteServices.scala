@@ -69,35 +69,35 @@ object SiteServices extends Loggable {
   }
 
   private case class NameAndTimestamp(name: String, timestamp: Long)
-  def schemeBookNames(implicit userManager: UserManager = UserManager): List[(String, Date)] = {
+  def schemeBookNames(implicit userManager: UserManager = UserManager): Option[List[(String, Date)]] = {
     try {
       Http((h / "api" / "auth" / "schemebooknames").as_!(userManager.userId, userManager.key).gzip >>~ {
         reader => {
-          JsonParser.parseOpt(reader).map {
+          JsonParser.parseOpt(reader).flatMap {
             case JArray(list: List[JObject]) =>
-              list.flatMap(_.extractOpt[NameAndTimestamp]).map {
+              Some(list.map(_.extract[NameAndTimestamp]).map {
                 case NameAndTimestamp(name, timestamp) =>
                   (name, new Date(timestamp))
-              }
+              })
             case _ =>
-              Nil
-          }.getOrElse(Nil)
+              None
+          }
         }
       })
     } catch {
-      case _ => Nil
+      case _ => None
     }
   }
   
-  def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager): List[ColorSchemeId] = {
+  def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager): Option[List[ColorSchemeId]] = {
     try {
       Http((h / "api" / "auth" / "schemebook" / bookName).as_!(userManager.userId, userManager.key).gzip >>~ {
         reader => {
-          JsonParser.parseOpt(reader).flatMap(_.extractOpt[List[ColorSchemeId]]).getOrElse(Nil)
+          JsonParser.parseOpt(reader).flatMap(_.extractOpt[List[ColorSchemeId]])
         }
       })
     } catch {
-      case _ => Nil
+      case _ => None
     }
   }
 }
