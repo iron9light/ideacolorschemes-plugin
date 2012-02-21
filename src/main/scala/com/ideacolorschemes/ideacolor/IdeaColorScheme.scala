@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.HighlighterColors
 import com.ideacolorschemes.commons.Implicits._
 import com.intellij.openapi.options.FontSize
 import java.util.EnumMap
+import util.{Loggable, IdeaUtil}
 
 /**
  * @author il
@@ -58,12 +59,11 @@ trait ColorSchemeUtil {
   def scanGet[T](func: ColorScheme => Option[T])(implicit ids: List[ColorSchemeId], manager: ColorSchemeManager) = scanIdGet(manager.get(_).map(func).getOrElse(None))
 }
 
-class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil {
-  val logger = com.intellij.openapi.diagnostic.Logger.getInstance(this.getClass)
+class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with Loggable {
 
   private val defaultEditorColorsScheme = EditorColorsManager.getInstance.getScheme(EditorColorsManager.DEFAULT_SCHEME_NAME)
 
-  implicit protected def colorSchemeManager: ColorSchemeManager = ColorSchemeManager()
+  implicit protected def colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
 
   implicit private def toColor(i: Option[Int]) = i.map(new Color(_)).getOrElse(null)
 
@@ -153,14 +153,12 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   def getEditorFontName = fontSettingGetOrElse(_.editorFontName, defaultEditorColorsScheme.getEditorFontName)
 
   def setEditorFontName(p1: String) {
-    println("setEditorFontName")
     // do nothing
   }
 
   def getFont(key: EditorFontType) = myFonts.get(key)
 
   def setFont(key: EditorFontType, font: Font) {
-    println("setFont")
     myFonts.put(key, font)
   }
 

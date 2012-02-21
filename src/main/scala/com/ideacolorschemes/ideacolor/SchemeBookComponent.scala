@@ -1,6 +1,6 @@
 package com.ideacolorschemes.ideacolor
 
-import util.Loggable
+import util.{IdeaUtil, Loggable}
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsListener}
 import com.intellij.openapi.components.{ServiceManager, ApplicationComponent}
 import com.intellij.openapi.progress.Task.Backgroundable
@@ -12,8 +12,8 @@ import com.intellij.ide.AppLifecycleListener
 /**
  * @author il
  */
-class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with Loggable {
-  val schemeBookManager = ServiceManager.getService(classOf[SchemeBookManager])
+class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with Loggable with IdeaUtil {
+  val schemeBookManager = service[SchemeBookManager]
 
   import schemeBookManager._
 

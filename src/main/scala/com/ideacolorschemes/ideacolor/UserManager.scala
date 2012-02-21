@@ -1,8 +1,8 @@
 package com.ideacolorschemes.ideacolor
 
-import com.intellij.openapi.components.ServiceManager
 import reflect.BeanProperty
 import collection.mutable.Publisher
+import util.IdeaUtil
 
 /**
  * @author il
@@ -17,8 +17,8 @@ trait UserManager {
   def update(userId: String, key: String)
 }
 
-object UserManager extends UserManager with Publisher[String] {
-  private[ideacolor] def userSettings: UserSetting = ServiceManager.getService(classOf[IdeaSettings])
+object UserManager extends UserManager with Publisher[String] with IdeaUtil {
+  private[this] def userSettings: UserSetting = service[IdeaSettings]
 
   def userId = userSettings.userId
 

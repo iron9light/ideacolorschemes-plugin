@@ -1,18 +1,18 @@
 package com.ideacolorschemes.ideacolor
 
 import com.intellij.openapi.actionSystem.{AnActionEvent, AnAction}
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager}
-import com.intellij.notification.{NotificationType, Notification, Notifications, EventLog}
+import com.intellij.notification.{NotificationType, Notification, Notifications}
+import util.IdeaUtil
 
 
 /**
  * @author il
  */
-class UpdateSchemeBooksAction extends AnAction {
-  private[this] val schemeBookManager = ServiceManager.getService(classOf[SchemeBookManager])
+class UpdateSchemeBooksAction extends AnAction with IdeaUtil {
+  private[this] val schemeBookManager = service[SchemeBookManager]
 
   def actionPerformed(anActionEvent: AnActionEvent) {
     implicit val project = anActionEvent.getProject
