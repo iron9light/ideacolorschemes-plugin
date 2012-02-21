@@ -28,7 +28,7 @@ case class UpdateBook(name: String, timestamp: Date) extends ModifyBook
 
 case class DeleteBook(name: String) extends ModifyBook
 
-trait SchemeBookManager extends Loggable with IdeaUtil {
+trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
   private[this] def bookSetting: BookSetting = service[IdeaSettings]
 
   def currentBook = {
@@ -155,16 +155,16 @@ trait SchemeBookManager extends Loggable with IdeaUtil {
 
   private def unloadAllBookScheme()(implicit project: Project) {
     ideaRun {
-      val currentSchemeName = editorColorsManager.getGlobalScheme.getName
-      val targetSchemeName = if (contains(currentSchemeName)) {
+      val currentIdeaScheme = editorColorsManager.getGlobalScheme
+      val targetSchemeName = if (isBook(currentIdeaScheme)) {
         EditorColorsScheme.DEFAULT_SCHEME_NAME
       } else {
-        currentSchemeName
+        currentIdeaScheme.getName
       }
       val ideaSchemes = editorColorsManager.getAllSchemes.toList
       editorColorsManager.removeAllSchemes()
       for {
-        ideaScheme <- ideaSchemes if !contains(ideaScheme.getName)
+        ideaScheme <- ideaSchemes if !isBook(ideaScheme)
       } {
         editorColorsManager.addColorsScheme(ideaScheme)
         if (ideaScheme.getName == targetSchemeName) {
@@ -174,5 +174,17 @@ trait SchemeBookManager extends Loggable with IdeaUtil {
     }
   }
 
-  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(book.name, book.schemeIds)
+  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(ideaSchemeName(book.name), book.schemeIds)
+}
+
+trait IdeaSchemeNameUtil {
+  private[this] final val capital = 0x7f.toChar.toString
+  
+  implicit def convertEditorColorsScheme(scheme: EditorColorsScheme) = new {
+    def name = scheme.getName.substring(capital.length)
+  }
+  
+  def isBook(scheme: EditorColorsScheme) = scheme.getName.startsWith(capital)
+  
+  def ideaSchemeName(name: String) = capital + name
 }
