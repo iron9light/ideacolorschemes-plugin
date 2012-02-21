@@ -5,8 +5,8 @@ import com.ideacolorschemes.commons.entities.ColorSchemeId
 import java.util.Date
 import com.ideacolorschemes.commons.WithTimestamp
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
-import com.intellij.openapi.components.ServiceManager
-import util.Loggable
+import util.{IdeaUtil, Loggable}
+import com.intellij.openapi.project.{ProjectManager, Project}
 
 /**
  * @author il
@@ -28,8 +28,8 @@ case class UpdateBook(name: String, timestamp: Date) extends ModifyBook
 
 case class DeleteBook(name: String) extends ModifyBook
 
-trait SchemeBookManager extends Loggable {
-  private[this] def bookSetting: BookSetting = ServiceManager.getService(classOf[IdeaSettings])
+trait SchemeBookManager extends Loggable with IdeaUtil {
+  private[this] def bookSetting: BookSetting = service[IdeaSettings]
 
   def currentBook = {
     Option(bookSetting.currentBook)
@@ -53,7 +53,7 @@ trait SchemeBookManager extends Loggable {
 
   def contains(name: String): Boolean
 
-  def reset() {
+  def reset()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
     unloadAllBookScheme()
 
     removeAll()
@@ -61,7 +61,7 @@ trait SchemeBookManager extends Loggable {
     currentBook = None
   }
 
-  def initUpdate() {
+  def initUpdate()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
     val modifies = getUpdateModifies
 
     applyUpdateModifies(modifies)
@@ -69,7 +69,7 @@ trait SchemeBookManager extends Loggable {
     loadAllBookScheme()
   }
 
-  def update() = {
+  def update()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) = {
     val modifies = getUpdateModifies
 
     if (modifies.isEmpty) {
@@ -87,26 +87,29 @@ trait SchemeBookManager extends Loggable {
   }
 
   private def getUpdateModifies = {
-    val nameAndTimestamps = SiteServices.schemeBookNames
-    val allBooks = getAll
-    val modifies = allBooks.flatMap {
-      book => {
-        nameAndTimestamps.find(_._1 == book.name) match {
-          case None =>
-            Some(DeleteBook(book.name))
-          case Some((bookName, timestamp)) if timestamp.after(book.timestamp) =>
-            Some(UpdateBook(bookName, timestamp))
-          case _ =>
-            None
+    SiteServices.schemeBookNames match {
+      case None => Nil
+      case Some(nameAndTimestamps) =>
+        val allBooks = getAll
+        val modifies = allBooks.flatMap {
+          book => {
+            nameAndTimestamps.find(_._1 == book.name) match {
+              case None =>
+                Some(DeleteBook(book.name))
+              case Some((bookName, timestamp)) if timestamp.after(book.timestamp) =>
+                Some(UpdateBook(bookName, timestamp))
+              case _ =>
+                None
+            }
+          }
+        } ::: nameAndTimestamps.flatMap {
+          case (name, timestamp) if allBooks.forall(_.name != name) =>
+            Some(UpdateBook(name, timestamp))
+          case _ => None
         }
-      }
-    } ::: nameAndTimestamps.flatMap {
-      case (name, timestamp) if allBooks.forall(_.name != name) =>
-        Some(UpdateBook(name, timestamp))
-      case _ => None
-    }
 
-    modifies
+        modifies
+    }
   }
 
   private def applyUpdateModifies(modifies: List[ModifyBook]) {
@@ -114,12 +117,12 @@ trait SchemeBookManager extends Loggable {
       UpdateBook(bookName, timestamp) <- modifies
     } yield {
       () => {
-        val schemeIds = SiteServices.schemeBook(bookName)
-        if (!schemeIds.isEmpty) {
-          val newBook = SchemeBook(bookName, schemeIds, timestamp)
-          put(newBook)
-        } else {
-          // keep the old one
+        SiteServices.schemeBook(bookName) match {
+          case Some(schemeIds) =>
+            val newBook = SchemeBook(bookName, schemeIds, timestamp)
+            put(newBook)
+          case _ =>
+            // keep the old one
         }
       }
     }).par.map(_()).toList
@@ -136,33 +139,37 @@ trait SchemeBookManager extends Loggable {
     }
   }
 
-  private def loadAllBookScheme() {
-    for {
-      book <- getAll
-    } {
-      val ideaColorScheme = book2ideaScheme(book)
-      editorColorsManager.addColorsScheme(ideaColorScheme)
-      if (currentBook.exists(_ == book.name)) {
-        editorColorsManager.setGlobalScheme(ideaColorScheme)
+  private def loadAllBookScheme()(implicit project: Project) {
+    ideaRun {
+      for {
+        book <- getAll
+      } {
+        val ideaColorScheme = book2ideaScheme(book)
+        editorColorsManager.addColorsScheme(ideaColorScheme)
+        if (currentBook.exists(_ == book.name)) {
+          editorColorsManager.setGlobalScheme(ideaColorScheme)
+        }
       }
     }
   }
 
-  private def unloadAllBookScheme() {
-    val currentSchemeName = editorColorsManager.getGlobalScheme.getName
-    val targetSchemeName = if (contains(currentSchemeName)) {
-      EditorColorsScheme.DEFAULT_SCHEME_NAME
-    } else {
-      currentSchemeName
-    }
-    val ideaSchemes = editorColorsManager.getAllSchemes.toList
-    editorColorsManager.removeAllSchemes()
-    for {
-      ideaScheme <- ideaSchemes if !contains(ideaScheme.getName)
-    } {
-      editorColorsManager.addColorsScheme(ideaScheme)
-      if (ideaScheme.getName == targetSchemeName) {
-        editorColorsManager.setGlobalScheme(ideaScheme)
+  private def unloadAllBookScheme()(implicit project: Project) {
+    ideaRun {
+      val currentSchemeName = editorColorsManager.getGlobalScheme.getName
+      val targetSchemeName = if (contains(currentSchemeName)) {
+        EditorColorsScheme.DEFAULT_SCHEME_NAME
+      } else {
+        currentSchemeName
+      }
+      val ideaSchemes = editorColorsManager.getAllSchemes.toList
+      editorColorsManager.removeAllSchemes()
+      for {
+        ideaScheme <- ideaSchemes if !contains(ideaScheme.getName)
+      } {
+        editorColorsManager.addColorsScheme(ideaScheme)
+        if (ideaScheme.getName == targetSchemeName) {
+          editorColorsManager.setGlobalScheme(ideaScheme)
+        }
       }
     }
   }

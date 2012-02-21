@@ -11,7 +11,7 @@ import com.ideacolorschemes.ideacolor.SiteUtil._
  */
 abstract class IdeaColorSettingsPanelUtil {
   def checkCredentialsAction() {
-    if (checkCredentials(getUserId, getKey, ProjectManager.getInstance.getDefaultProject)) {
+    if (checkCredentials(getUserId, getKey)) {
       Messages.showInfoMessage("Connection successful", "Success")
     }
     else {
@@ -25,7 +25,7 @@ abstract class IdeaColorSettingsPanelUtil {
 
   def noticeTest = "<html>Do not have an account at ideacolorscheme.com? <a href=\"" + httpHost + "\">Sign up</a></html>"
 
-  private[this] def checkCredentials(userId: String, key: String, project: Project): Boolean = {
+  private[this] def checkCredentials(userId: String, key: String)(implicit project: Project = ProjectManager.getInstance.getDefaultProject): Boolean = {
     if (userId.isEmpty || key.isEmpty)
       false
     else {

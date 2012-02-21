@@ -90,12 +90,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>r09</version>
@@ -111,6 +105,12 @@
       <groupId>picocontainer</groupId>
       <artifactId>picocontainer</artifactId>
       <version>1.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
       <scope>provided</scope>
     </dependency>
 
@@ -154,6 +154,11 @@
       <groupId>org.fusesource.hawtdb</groupId>
       <artifactId>hawtdb</artifactId>
       <version>1.6</version>
+    </dependency>
+    <dependency>
+      <groupId>net.databinder</groupId>
+      <artifactId>dispatch-http_${scala.version}</artifactId>
+      <version>0.8.7</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
