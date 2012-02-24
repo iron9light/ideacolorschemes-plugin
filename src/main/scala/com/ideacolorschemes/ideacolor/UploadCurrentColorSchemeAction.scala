@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
  * @author il
  */
 
-class UploadCurrentColorSchemeAction extends AnAction {
+class UploadCurrentColorSchemeAction extends AnAction with IdeaSchemeNameUtil {
   def ideaEditorColorsManager = EditorColorsManager.getInstance
   
   def actionPerformed(anActionEvent: AnActionEvent) {
@@ -19,6 +19,8 @@ class UploadCurrentColorSchemeAction extends AnAction {
     val editorColorsScheme = ideaEditorColorsManager.getGlobalScheme
     if (ideaEditorColorsManager.isDefaultScheme(editorColorsScheme)) {
       Messages.showInfoMessage(project, "Current color scheme is default.", "Failure")
+    } else if (isBook(editorColorsScheme)) {
+      Messages.showInfoMessage(project, "Current color scheme is from website.", "Failure")
     } else {
       uploadScheme(editorColorsScheme)
     }
