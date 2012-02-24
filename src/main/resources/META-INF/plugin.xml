@@ -1,8 +1,20 @@
 <idea-plugin version="2">
+  <id>Color</id>
   <name>Color</name>
-  <description>Export all color setting pages information.</description>
+  <description><![CDATA[
+      Find and share color schemes on <a href="http://ideacolorschemes.com">ideacolorschemes.com</a>
+  ]]></description>
+  <change-notes><![CDATA[
+      <ul>
+
+      <dt><b>0.1 (in progress)</b></dt>
+      <li>Upload(share) your current color schemes to <a href="http://ideacolorschemes.com">ideacolorschemes.com</a></li>
+      <li>Download/Update your color schemes from <a href="http://ideacolorschemes.com">ideacolorschemes.com</a></li>
+
+      </ul>
+  ]]></change-notes>
   <version>0.1</version>
-  <vendor>ideacolorscheme.com</vendor>
+  <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor><!-- TODO: I need a logo -->
   <idea-version since-build="107.105"/>
 
   <application-components>
