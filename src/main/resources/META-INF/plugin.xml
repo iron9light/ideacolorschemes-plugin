@@ -23,14 +23,16 @@
   <change-notes><![CDATA[
       <ul>
 
-      <dt><b>0.2 (in progress)</b></dt>
+      <dt><b>0.1.1 (in progress)</b></dt>
+      <li>Bug fix: cannot upload schemes</li>
+
       <dt><b>0.1 (2012-02-29)</b></dt>
       <li>Upload(share) your current color schemes to <a href="http://ideacolorschemes.com">ideacolorschemes.com</a></li>
       <li>Download/Update your color schemes from <a href="http://ideacolorschemes.com">ideacolorschemes.com</a></li>
 
       </ul>
   ]]></change-notes>
-  <version>0.2</version>
+  <version>0.1.1</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 

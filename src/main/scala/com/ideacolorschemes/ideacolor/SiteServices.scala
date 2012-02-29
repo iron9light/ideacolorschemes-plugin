@@ -22,6 +22,10 @@ import com.ideacolorschemes.commons.json.ColorSchemeFormats
 import util.Loggable
 import java.util.Date
 import dispatch._
+import org.apache.http.params.HttpParams
+import org.apache.http.conn.params.ConnRouteParams
+import org.apache.http.HttpHost
+import org.apache.http.auth.{NTCredentials, UsernamePasswordCredentials, AuthScope}
 
 /**
  * @author il
@@ -44,11 +48,39 @@ object SiteServices extends Loggable {
     import org.apache.http.protocol.HttpContext
 
     override def make_client = {
-      val client = super.make_client.asInstanceOf[ConfiguredHttpClient]
-      client.setRedirectStrategy(new DefaultRedirectStrategy{
-        override def isRedirected(req: HttpRequest, res: HttpResponse, ctx: HttpContext) = false
-      })
-      client
+      new ConfiguredHttpClient(credentials) {
+        override protected def configureProxy(params: HttpParams) = {
+          val sys = System.getProperties
+          val host = sys.getProperty("https.proxyHost",
+            sys.getProperty("http.proxyHost"))
+          val port = sys.getProperty("https.proxyPort",
+            sys.getProperty("http.proxyPort"))
+          val user = sys.getProperty("https.proxyUser",
+            sys.getProperty("http.proxyUser"))
+          val password = sys.getProperty("https.proxyPassword",
+            sys.getProperty("http.proxyPassword"))
+          val domain = sys.getProperty("https.auth.ntlm.domain",
+            sys.getProperty("http.auth.ntlm.domain"))
+          if (host != null && !host.isEmpty && port != null && !port.isEmpty) {
+            ConnRouteParams.setDefaultProxy(params,
+              new HttpHost(host, port.toInt))
+            proxyScope = Some(new AuthScope(host, port.toInt))
+          }
+          if (user != null && !user.isEmpty && password != null && !password.isEmpty) {
+            proxyBasicCredentials =
+              Some(new UsernamePasswordCredentials(user, password))
+            // We should pass our hostname, actually
+            // Also, we ought to support "domain/user" syntax
+            proxyNTCredentials = Some(new NTCredentials(
+              user, password, "", Option(domain) getOrElse ""))
+          }
+          params
+        }
+
+        setRedirectStrategy(new DefaultRedirectStrategy{
+          override def isRedirected(req: HttpRequest, res: HttpResponse, ctx: HttpContext) = false
+        })
+      }
     }
   }
 
