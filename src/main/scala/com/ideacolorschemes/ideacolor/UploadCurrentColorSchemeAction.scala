@@ -46,14 +46,14 @@ class UploadCurrentColorSchemeAction extends AnAction with IdeaSchemeNameUtil {
     val colorScheme = ColorSchemeParser.parse(editorColorsScheme).get
     SiteUtil.accessToSiteWithModalProgress {
       indicator => {
-        indicator.setText("Trying to update current color scheme to ideacolorschemes")
+        indicator.setText("Trying to upload current color scheme to ideacolorschemes")
         SiteServices.addScheme(colorScheme)
       }
     } match {
       case Some(url) =>
         BrowserUtil.launchBrowser(url)
       case None =>
-        Messages.showInfoMessage(project, "Cannot update current color scheme to ideacolorschemes.", "Failure")
+        Messages.showInfoMessage(project, "Cannot upload current color scheme to ideacolorschemes.", "Failure")
     }
   }
 }
