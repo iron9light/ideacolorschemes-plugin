@@ -30,8 +30,8 @@
       </ul>
   ]]></change-notes>
   <version>0.1</version>
-  <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor><!-- TODO: I need a logo -->
-  <idea-version since-build="107.105"/>
+  <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
+  <idea-version since-build="111.63"/>
 
   <application-components>
     <!-- Add your application components here -->
