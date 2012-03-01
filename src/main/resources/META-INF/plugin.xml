@@ -25,6 +25,7 @@
 
       <dt><b>0.1.1 (in progress)</b></dt>
       <li>Bug fix: cannot upload schemes</li>
+      <li>Preload all schemes when update</li>
 
       <dt><b>0.1 (2012-02-29)</b></dt>
       <li>Upload(share) your current color schemes to <a href="http://ideacolorschemes.com">ideacolorschemes.com</a></li>

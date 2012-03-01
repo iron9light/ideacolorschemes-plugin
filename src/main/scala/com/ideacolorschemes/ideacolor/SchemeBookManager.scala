@@ -23,10 +23,10 @@ import com.ideacolorschemes.commons.WithTimestamp
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
 import util.{IdeaUtil, Loggable}
 import com.intellij.openapi.project.{ProjectManager, Project}
+import annotation.tailrec
 
 /**
  * @author il
- * @version 12/20/11 9:39 AM
  */
 
 trait BookSetting {
@@ -56,6 +56,8 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
   }
 
   val editorColorsManager = EditorColorsManager.getInstance()
+  
+  private val colorSchemeManager = service[ColorSchemeManager]
 
   def get(name: String): Option[SchemeBook]
 
@@ -135,8 +137,11 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
       () => {
         SiteServices.schemeBook(bookName) match {
           case Some(schemeIds) =>
-            val newBook = SchemeBook(bookName, schemeIds, timestamp)
-            put(newBook)
+            if (schemeIds.forall(checkSchemeId)) {
+              val newBook = SchemeBook(bookName, schemeIds, timestamp)
+              put(newBook)
+            }
+            // else, keep the old one
           case _ =>
             // keep the old one
         }
@@ -152,6 +157,21 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
           currentBook = None
         }
       case _ =>
+    }
+  }
+
+  @tailrec
+  private def checkSchemeId(schemeId: ColorSchemeId): Boolean = {
+    colorSchemeManager.get(schemeId) match {
+      case None =>
+        false
+      case Some(scheme) =>
+        scheme.dependencies.flatMap(_.find{_.target == schemeId.target}) match {
+          case None =>
+            true
+          case Some(dependencyId) =>
+            checkSchemeId(dependencyId)
+        }
     }
   }
 
