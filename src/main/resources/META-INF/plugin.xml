@@ -23,6 +23,9 @@
   <change-notes><![CDATA[
       <ul>
 
+      <dt><b>0.1.2 (2012-03-03)</b></dt>
+      <li>Bug fix: fail to download scheme</li>
+
       <dt><b>0.1.1 (2012-03-01)</b></dt>
       <li>Bug fix: cannot upload schemes</li>
       <li>Preload all schemes when update</li>
@@ -33,7 +36,7 @@
 
       </ul>
   ]]></change-notes>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 
