@@ -20,20 +20,17 @@ package impl
 import org.bson.{BSONObject, BasicBSONObject}
 import collection.JavaConversions._
 import java.util.Date
-import java.io.File
-import org.fusesource.hawtdb.api.{BTreeIndexFactory, PageFileFactory}
+import org.fusesource.hawtdb.api.BTreeIndexFactory
 import com.intellij.openapi.Disposable
 import com.ideacolorschemes.commons.bson.{BsonParser, ColorSchemeIdParser}
 
 /**
  * @author il
  */
-class HawtSchemeBookManager extends SchemeBookManager with Disposable {
+class HawtSchemeBookManager extends SchemeBookManager with Disposable with HawtDbUtil {
   private[this] val path = ideaConfigFolder + "book.db"
 
-  private[this] val factory = new PageFileFactory
-  factory.setFile(new File(path))
-  factory.open()
+  private[this] val factory = newPageFileFactory(path)
   
   private[this] val db = {
     val page = factory.getPageFile
