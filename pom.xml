@@ -20,7 +20,7 @@
 
   <groupId>com.ideacolorschemes</groupId>
   <artifactId>ideacolor</artifactId>
-  <version>0.1.3-SNAPSHOT</version>
+  <version>0.1.3</version>
   <name>ideacolorschemes-plugin</name>
   <inceptionYear>2012</inceptionYear>
   <url>https://github.com/iron9light/${project.name}</url>
