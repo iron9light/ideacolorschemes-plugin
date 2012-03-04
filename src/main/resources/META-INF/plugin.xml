@@ -25,6 +25,7 @@
 
       <dt><b>0.2 (in progress)</b></dt>
       <li>optimize memory usage</li>
+      <li>Bug fix: fail to recovery current scheme</li>
 
       <dt><b>0.1.2 (2012-03-03)</b></dt>
       <li>Bug fix: fail to download scheme</li>
