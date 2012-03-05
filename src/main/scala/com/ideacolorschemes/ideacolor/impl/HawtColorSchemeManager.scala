@@ -21,9 +21,9 @@ import com.ideacolorschemes.commons.entities._
 import com.intellij.openapi.Disposable
 import com.ideacolorschemes.commons.bson.ColorSchemeIdParser
 import org.bson.{BasicBSONDecoder, BasicBSONEncoder}
-import java.io.{DataOutput, DataInput, File}
+import java.io.{DataOutput, DataInput}
 import org.fusesource.hawtbuf.codec.{BytesCodec, Codec}
-import org.fusesource.hawtdb.api.{BTreeIndexFactory, PageFileFactory}
+import org.fusesource.hawtdb.api.BTreeIndexFactory
 import java.util.Comparator
 
 /**
@@ -111,12 +111,10 @@ object VersionComparator extends Comparator[Version] {
   }
 }
 
-class HawtColorSchemeManager extends ColorSchemeManager with Disposable {
+class HawtColorSchemeManager extends ColorSchemeManager with Disposable with HawtDbUtil {
   val path = ideaConfigFolder + "scheme.db"
 
-  val factory = new PageFileFactory
-  factory.setFile(new File(path))
-  factory.open()
+  val factory = newPageFileFactory(path)
 
   val db = {
     val page = factory.getPageFile

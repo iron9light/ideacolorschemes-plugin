@@ -250,11 +250,6 @@
               <artifactId>continuations</artifactId>
               <version>${scala.version}</version>
             </compilerPlugin>
-            <compilerPlugin>
-              <groupId>iron9light.autoguice</groupId>
-              <artifactId>plugin</artifactId>
-              <version>0.1-SNAPSHOT</version>
-            </compilerPlugin>
           </compilerPlugins>
           <args>
             <!--<arg>-P:continuations:enable</arg>-->

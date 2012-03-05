@@ -30,7 +30,7 @@ import org.apache.http.auth.{NTCredentials, UsernamePasswordCredentials, AuthSco
 /**
  * @author il
  */
-object SiteServices extends Loggable {
+object SiteServices extends Loggable with Encoders {
   implicit val formats = ColorSchemeFormats
   
   private val h = {
@@ -106,7 +106,7 @@ object SiteServices extends Loggable {
 
   def scheme(id: ColorSchemeId): Option[ColorScheme] = {
     try {
-      Http((h / "api" / "scheme" / id.author / id.name / id.version.toString / id.target).gzip >>~ {
+      Http((h / "api" / "scheme" / encode_%(id.author) / encode_%(id.name) / encode_%(id.version.toString) / encode_%(id.target)).gzip >>~ {
         reader => {
           JsonParser.parseOpt(reader).flatMap(_.extractOpt[ColorScheme])
         }
@@ -139,7 +139,7 @@ object SiteServices extends Loggable {
   
   def schemeBook(bookName: String)(implicit userManager: UserManager = UserManager): Option[List[ColorSchemeId]] = {
     try {
-      Http((h / "api" / "auth" / "schemebook" / bookName).as_!(userManager.userId, userManager.key).gzip >>~ {
+      Http((h / "api" / "auth" / "schemebook" / encode_%(bookName)).as_!(userManager.userId, userManager.key).gzip >>~ {
         reader => {
           JsonParser.parseOpt(reader).flatMap(_.extractOpt[List[ColorSchemeId]])
         }
@@ -148,4 +148,6 @@ object SiteServices extends Loggable {
       case _ => None
     }
   }
+
+  def defaultCharset = Request.defaultCharset
 }

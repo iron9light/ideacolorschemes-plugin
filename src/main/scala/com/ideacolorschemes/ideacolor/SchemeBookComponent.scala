@@ -18,7 +18,7 @@ package com.ideacolorschemes.ideacolor
 
 import util.{IdeaUtil, Loggable}
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsListener}
-import com.intellij.openapi.components.{ServiceManager, ApplicationComponent}
+import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager}
 import com.intellij.openapi.project.{ProjectManager, Project}
@@ -36,8 +36,8 @@ class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with
   def initComponent() {
     editorColorsManager.addEditorColorsListener(new EditorColorsListener {
       def globalSchemeChange(scheme: EditorColorsScheme) {
-        val name = scheme.getName
-        currentBook = if (contains(name)) {
+        val name = scheme.name
+        currentBook = if (isBook(scheme) && contains(name)) {
           Some(name)
         } else {
           None
