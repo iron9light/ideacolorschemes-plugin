@@ -64,18 +64,8 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
   lazy val editorFontName = underlying.getEditorFontName
 
   def setEditorFontName(fontName: String) {}
-  
-  private val fontMap = Map[EditorFontType, Font]()
 
-  def getFont(key: EditorFontType) = {
-    fontMap.get(key) match {
-      case Some(value) => value
-      case None =>
-        val value = underlying.getFont(key)
-        fontMap += (key -> value)
-        value
-    }
-  }
+  def getFont(key: EditorFontType) = underlying.getFont(key)
 
   def setFont(key: EditorFontType, font: Font) {}
 

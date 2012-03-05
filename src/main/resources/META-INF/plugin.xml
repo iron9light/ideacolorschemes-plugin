@@ -25,6 +25,7 @@
 
       <dt><b>0.1.4 (in progress)</b></dt>
       <li>Bug fix: fuckin slow!</li>
+      <li>Synchronize update</li>
 
       <dt><b>0.1.3 (2012-03-04)</b></dt>
       <li>optimize memory usage</li>
