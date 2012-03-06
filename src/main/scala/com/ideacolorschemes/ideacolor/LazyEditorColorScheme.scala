@@ -2,7 +2,6 @@ package com.ideacolorschemes.ideacolor
 
 import com.intellij.openapi.editor.colors.impl.ReadOnlyColorsScheme
 import com.intellij.openapi.editor.markup.TextAttributes
-import reflect.BeanProperty
 import com.intellij.openapi.options.FontSize
 import com.intellij.openapi.editor.colors.{EditorFontType, ColorKey, TextAttributesKey, EditorColorsScheme}
 import java.awt.{Font, Color}
@@ -30,11 +29,9 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
 
   def setAttributes(key: TextAttributesKey, attributes: TextAttributes) {}
 
-  @BeanProperty
-  lazy val defaultBackground = underlying.getDefaultBackground
+  lazy val getDefaultBackground = underlying.getDefaultBackground
 
-  @BeanProperty
-  lazy val defaultForeground = underlying.getDefaultForeground
+  lazy val getDefaultForeground = underlying.getDefaultForeground
 
   private val colorMap = Map[ColorKey, Color]()
 
@@ -50,18 +47,15 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
 
   def setColor(key: ColorKey, color: Color) {}
 
-  @BeanProperty
-  lazy val editorFontSize = underlying.getEditorFontSize
+  lazy val getEditorFontSize = underlying.getEditorFontSize
 
   def setEditorFontSize(fontSize: Int) {}
 
-  @BeanProperty
-  lazy val quickDocFontSize = underlying.getQuickDocFontSize
+  lazy val getQuickDocFontSize = underlying.getQuickDocFontSize
 
   def setQuickDocFontSize(fontSize: FontSize) {}
 
-  @BeanProperty
-  lazy val editorFontName = underlying.getEditorFontName
+  lazy val getEditorFontName = underlying.getEditorFontName
 
   def setEditorFontName(fontName: String) {}
 
@@ -69,23 +63,19 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
 
   def setFont(key: EditorFontType, font: Font) {}
 
-  @BeanProperty
-  lazy val lineSpacing = underlying.getLineSpacing
+  lazy val getLineSpacing = underlying.getLineSpacing
 
   def setLineSpacing(lineSpacing: Float) {}
 
-  @BeanProperty
-  lazy val consoleFontName = underlying.getConsoleFontName
+  lazy val getConsoleFontName = underlying.getConsoleFontName
 
   def setConsoleFontName(fontName: String) {}
 
-  @BeanProperty
-  lazy val consoleFontSize = underlying.getConsoleFontSize
+  lazy val getConsoleFontSize = underlying.getConsoleFontSize
 
   def setConsoleFontSize(fontSize: Int) {}
 
-  @BeanProperty
-  lazy val consoleLineSpacing = underlying.getConsoleLineSpacing
+  lazy val getConsoleLineSpacing = underlying.getConsoleLineSpacing
 
   def setConsoleLineSpacing(lineSpacing: Float) {}
 
@@ -97,7 +87,5 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
     underlying.writeExternal(element)
   }
 
-  private lazy val theName = underlying.getName
-
-  def getName = theName
+  lazy val getName = underlying.getName
 }
