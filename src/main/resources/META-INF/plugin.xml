@@ -23,6 +23,10 @@
   <change-notes><![CDATA[
       <ul>
 
+      <dt><b>0.1.4 (2012-03-05)</b></dt>
+      <li>Bug fix: fuckin slow!</li>
+      <li>Synchronize update</li>
+
       <dt><b>0.1.3 (2012-03-04)</b></dt>
       <li>optimize memory usage</li>
       <li>Bug fix: fail to recovery current scheme</li>
@@ -40,7 +44,7 @@
 
       </ul>
   ]]></change-notes>
-  <version>0.1.3</version>
+  <version>0.1.4</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 

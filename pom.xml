@@ -20,7 +20,7 @@
 
   <groupId>com.ideacolorschemes</groupId>
   <artifactId>ideacolor</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.1.5-SNAPSHOT</version>
   <name>ideacolorschemes-plugin</name>
   <inceptionYear>2012</inceptionYear>
   <url>https://github.com/iron9light/${project.name}</url>
@@ -126,6 +126,13 @@
       <version>${idea.version}</version>
       <scope>system</scope>
       <systemPath>${idea.home}/lib/annotations.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>forms_rt</artifactId>
+      <version>${idea.version}</version>
+      <scope>system</scope>
+      <systemPath>${idea.home}/lib/forms_rt.jar</systemPath>
     </dependency>
     <!-- IntelliJ IDEA libraries-->
     <dependency>
