@@ -106,7 +106,10 @@ object DefaultColorSchemeExtractor {
     val editorFontSize = Some(scheme.getEditorFontSize)
     val lineSpacing = Some(scheme.getLineSpacing)
     val quickDocFontSize = Option(scheme.getQuickDocFontSize).map(_.getSize)
-    FontSetting(editorFontName, editorFontSize, lineSpacing, quickDocFontSize)
+    val consoleFontName = Option(scheme.getConsoleFontName)
+    val consoleFontSize = Some(scheme.getConsoleFontSize)
+    val consoleLineSpacing = Some(scheme.getConsoleLineSpacing)
+    FontSetting(editorFontName, editorFontSize, lineSpacing, quickDocFontSize, consoleFontName, consoleFontSize, consoleLineSpacing)
   }
 
   def color2int(color: Color) = color.getRGB & 0xFFFFFF
