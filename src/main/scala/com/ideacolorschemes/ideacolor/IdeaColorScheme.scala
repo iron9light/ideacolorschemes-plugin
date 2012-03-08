@@ -195,19 +195,19 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   def getName = name
 
-  def getConsoleFontName = getEditorFontName
+  def getConsoleFontName = fontSettingGetOrElse(_.consoleFontName, getEditorFontName)
 
   def setConsoleFontName(name: String) {
     // do nothing
   }
 
-  def getConsoleFontSize = getEditorFontSize
+  def getConsoleFontSize = fontSettingGetOrElse(_.consoleFontSize, getEditorFontSize)
 
   def setConsoleFontSize(x: Int) {
     // do nothing
   }
 
-  def getConsoleLineSpacing = getLineSpacing
+  def getConsoleLineSpacing = fontSettingGetOrElse(_.consoleLineSpacing, getLineSpacing)
 
   def setConsoleLineSpacing(x: Float) {
     // do nothing
