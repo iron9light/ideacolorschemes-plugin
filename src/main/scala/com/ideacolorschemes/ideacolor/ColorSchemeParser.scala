@@ -132,10 +132,16 @@ object ColorSchemeParser {
           setting: FontSetting => setting.copy(lineSpacing = Some(value.toFloat))
         case EDITOR_FONT_SIZE =>
           setting: FontSetting => setting.copy(editorFontSize = Some(value.toInt))
-        case EDITOR_QUICK_JAVADOC_FONT_SIZE =>
-          setting: FontSetting => setting.copy(quickDocFontSize = Some(value.toInt))
         case EDITOR_FONT_NAME =>
           setting: FontSetting => setting.copy(editorFontName = Some(value))
+        case CONSOLE_LINE_SPACING =>
+          setting: FontSetting => setting.copy(consoleLineSpacing = Some(value.toFloat))
+        case CONSOLE_FONT_SIZE =>
+          setting: FontSetting => setting.copy(consoleFontSize = Some(value.toInt))
+        case CONSOLE_FONT_NAME =>
+          setting: FontSetting => setting.copy(consoleFontName = Some(value))
+        case EDITOR_QUICK_JAVADOC_FONT_SIZE =>
+          setting: FontSetting => setting.copy(quickDocFontSize = Some(value.toInt))
         case _ => setting: FontSetting => setting
       }
     }

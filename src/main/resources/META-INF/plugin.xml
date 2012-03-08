@@ -23,6 +23,9 @@
   <change-notes><![CDATA[
       <ul>
 
+      <dt><b>0.2 (in progress)</b></dt>
+      <li>Support console font</li>
+
       <dt><b>0.1.4 (2012-03-05)</b></dt>
       <li>Bug fix: fuckin slow!</li>
       <li>Synchronize update</li>
@@ -44,7 +47,7 @@
 
       </ul>
   ]]></change-notes>
-  <version>0.1.4</version>
+  <version>0.2</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 
