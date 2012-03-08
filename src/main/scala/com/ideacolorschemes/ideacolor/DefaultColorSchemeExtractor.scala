@@ -91,8 +91,8 @@ object DefaultColorSchemeExtractor {
       }
       val fontType = textAttributes.getFontType match {
         case 0 => FontType.PLAIN
-        case 1 => FontType.ITALIC
-        case 2 => FontType.BOLD
+        case 1 => FontType.BOLD
+        case 2 => FontType.ITALIC
         case 3 => FontType.BOLD_ITALIC
         case _ => FontType.PLAIN
       }
