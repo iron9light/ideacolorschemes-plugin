@@ -109,9 +109,13 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     logger.info("setName")
   }
 
-  def getAttributes(textAttributesKey: TextAttributesKey): TextAttributes = getAttributes(textAttributesKey.getExternalName) match {
-    case None => defaultEditorColorsScheme.getAttributes(textAttributesKey)
-    case x => x
+  def getAttributes(textAttributesKey: TextAttributesKey): TextAttributes = textAttributesKey match {
+    case HighlighterColors.TEXT if highlighterTextAttributes.isDefined => highlighterTextAttributes.get
+    case _ =>
+      getAttributes(textAttributesKey.getExternalName) match {
+        case None => defaultEditorColorsScheme.getAttributes(textAttributesKey)
+        case x => x
+      }
   }
 
   def getAttributes(key: String) = scanIdDeepGet(_.attributes.get(key))
@@ -259,4 +263,24 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 
   initFonts()
+  
+  private val highlighterTextAttributes = fixDeprecatedBackgroundColor
+
+  // This setting has been deprecated to usages of HighlighterColors.TEXT attributes
+  private def fixDeprecatedBackgroundColor: Option[TextAttributes] = {
+    getColor(IdeaColorScheme.BACKGROUND_COLOR_NAME).map {
+      deprecatedBackgroundColor => {
+        getAttributes(HighlighterColors.TEXT.getExternalName) match {
+          case None =>
+            new TextAttributes(Color.black, Some(deprecatedBackgroundColor), null, com.intellij.openapi.editor.markup.EffectType.BOXED, Font.PLAIN)
+          case Some(attributes) =>
+            Some(attributes.copy(backgroundColor = Some(deprecatedBackgroundColor)))
+        }
+      }
+    }
+  }
+}
+
+object IdeaColorScheme {
+  private val BACKGROUND_COLOR_NAME = "BACKGROUND"
 }
