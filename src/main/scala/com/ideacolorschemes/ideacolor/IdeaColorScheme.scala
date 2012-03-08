@@ -170,7 +170,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     // do nothing
   }
 
-  def getEditorFontName = fontSettingGetOrElse(_.editorFontName, defaultEditorColorsScheme.getEditorFontName)
+  def getEditorFontName = myFallbackFontName.getOrElse(fontSettingGetOrElse(_.editorFontName, defaultEditorColorsScheme.getEditorFontName))
 
   def setEditorFontName(p1: String) {
     // do nothing
@@ -182,7 +182,14 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     myFonts.put(key, font)
   }
 
-  def getLineSpacing = fontSettingGetOrElse(_.lineSpacing, defaultEditorColorsScheme.getLineSpacing)
+  def getLineSpacing = fontSettingGetOrElse(_.lineSpacing.map(fixLineSpacing), defaultEditorColorsScheme.getLineSpacing)
+  
+  private def fixLineSpacing(lineSpacing: Float) = {
+    if (lineSpacing <= 0)
+      1.0f
+    else
+      lineSpacing
+  }
 
   def setLineSpacing(p1: Float) {
     // do nothing
@@ -263,7 +270,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 
   initFonts()
-  
+
   private val highlighterTextAttributes = fixDeprecatedBackgroundColor
 
   // This setting has been deprecated to usages of HighlighterColors.TEXT attributes
