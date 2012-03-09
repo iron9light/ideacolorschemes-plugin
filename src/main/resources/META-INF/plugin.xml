@@ -70,6 +70,9 @@
       <action id="com.ideacolorschemes.ideacolor.ExportColorSettingsAction"
               class="com.ideacolorschemes.ideacolor.ExportColorSettingsAction" text="Export color setting pages">
       </action>
+      <action id="com.ideacolorschemes.ideacolor.tests.TestAction"
+              class="com.ideacolorschemes.ideacolor.tests.TestAction" text="Run test">
+      </action>
       <action id="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction"
               class="com.ideacolorschemes.ideacolor.UploadCurrentColorSchemeAction" text="Upload current color scheme">
       </action>

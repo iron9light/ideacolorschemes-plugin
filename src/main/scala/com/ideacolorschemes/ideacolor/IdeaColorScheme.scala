@@ -81,7 +81,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   implicit protected def colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
 
-  implicit private def toColor(i: Option[Int]) = i.map(new Color(_)).getOrElse(null)
+  implicit private def toColor(i: Option[Int]) = i.filter(_ >= 0).map(new Color(_)).getOrElse(null)
 
   implicit private def toEffectType(e: Option[EffectType.Value]) = e.map(x => {
     JEffectType.values()(x.id)
@@ -289,5 +289,5 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 }
 
 object IdeaColorScheme {
-  private val BACKGROUND_COLOR_NAME = "BACKGROUND"
+  private[ideacolor] val BACKGROUND_COLOR_NAME = "BACKGROUND"
 }

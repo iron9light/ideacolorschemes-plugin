@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor
 
 /**
  * @author il
- * @version 11/8/11 11:26 PM
  */
 
 object ColorSchemeParser {
@@ -154,8 +153,7 @@ object ColorSchemeParser {
       child <- node \ OPTION_ELEMENT
       name <- child.attribute(NAME_ATTR).map(_.toString())
       value <- child.attribute(VALUE_ELEMENT).map(_.toString())
-      color <- tryReadColorInt(value)
-    } yield (name, color)).toMap
+    } yield (name, tryReadColorInt(value).getOrElse(-1))).toMap
   }
 
   def tryReadColorInt(value: String): Option[Int] = try {
@@ -246,9 +244,6 @@ object ColorSchemeParser {
         case _ => attribute: TextAttributesObject => attribute
       }
 
-    processes.foldLeft(TextAttributesObject.Empty)((attributeValue, func) => func(attributeValue)) match {
-      case TextAttributesObject.Empty => None
-      case x => Some(x)
-    }
+    Some(processes.foldLeft(TextAttributesObject.Empty)((attributeValue, func) => func(attributeValue)))
   }
 }
