@@ -81,16 +81,6 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
 
   private[this] val updateLock = new AnyRef
 
-  def initUpdate()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
-    updateLock.synchronized {
-      val modifies = getUpdateModifies
-
-      applyUpdateModifies(modifies)
-
-      loadAllBookScheme()
-    }
-  }
-
   def update()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) = updateLock.synchronized {
     val modifies = getUpdateModifies
 
@@ -179,10 +169,10 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
     }
   }
 
-  private def loadAllBookScheme()(implicit project: Project) {
+  def loadAllBookScheme()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
     ideaRun {
       for {
-        book <- getAll
+        book <- getAll if book.schemeIds.forall(checkSchemeId)
       } {
         val ideaColorScheme = book2ideaScheme(book)
         editorColorsManager.addColorsScheme(ideaColorScheme)

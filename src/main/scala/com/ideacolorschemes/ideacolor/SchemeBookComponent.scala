@@ -49,7 +49,11 @@ class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with
 
     val listener: AppLifecycleListener = new AppLifecycleListener.Adapter {
       override def appStarting(projectFromCommandLine: Project) {
-        runInitUpdate(projectFromCommandLine)
+        implicitly(projectFromCommandLine)
+
+        loadAllBookScheme()
+
+        runUpdate()
       }
     }
 
@@ -64,13 +68,13 @@ class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with
   def notify(pub: UserManager.Pub, event: String) {
     reset()
 
-    runInitUpdate()
+    runUpdate()
   }
 
-  private def runInitUpdate(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
+  private def runUpdate()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
     ProgressManager.getInstance().run(new Backgroundable(project, "Update color schemes", false) {
       def run(indicator: ProgressIndicator) {
-        initUpdate()
+        update()
       }
     })
   }
