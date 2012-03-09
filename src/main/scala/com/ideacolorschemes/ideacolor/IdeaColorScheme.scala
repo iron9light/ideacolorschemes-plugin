@@ -81,7 +81,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   implicit protected def colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
 
-  implicit private def toColor(i: Option[Int]) = i.map(new Color(_)).getOrElse(null)
+  implicit private def toColor(i: Option[Int]) = i.filter(_ >= 0).map(new Color(_)).getOrElse(null)
 
   implicit private def toEffectType(e: Option[EffectType.Value]) = e.map(x => {
     JEffectType.values()(x.id)
@@ -109,9 +109,13 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     logger.info("setName")
   }
 
-  def getAttributes(textAttributesKey: TextAttributesKey): TextAttributes = getAttributes(textAttributesKey.getExternalName) match {
-    case None => defaultEditorColorsScheme.getAttributes(textAttributesKey)
-    case x => x
+  def getAttributes(textAttributesKey: TextAttributesKey): TextAttributes = textAttributesKey match {
+    case HighlighterColors.TEXT if highlighterTextAttributes.isDefined => highlighterTextAttributes.get
+    case _ =>
+      getAttributes(textAttributesKey.getExternalName) match {
+        case None => defaultEditorColorsScheme.getAttributes(textAttributesKey)
+        case x => x
+      }
   }
 
   def getAttributes(key: String) = scanIdDeepGet(_.attributes.get(key))
@@ -166,7 +170,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     // do nothing
   }
 
-  def getEditorFontName = fontSettingGetOrElse(_.editorFontName, defaultEditorColorsScheme.getEditorFontName)
+  def getEditorFontName = myFallbackFontName.getOrElse(fontSettingGetOrElse(_.editorFontName, defaultEditorColorsScheme.getEditorFontName))
 
   def setEditorFontName(p1: String) {
     // do nothing
@@ -178,7 +182,14 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     myFonts.put(key, font)
   }
 
-  def getLineSpacing = fontSettingGetOrElse(_.lineSpacing, defaultEditorColorsScheme.getLineSpacing)
+  def getLineSpacing = fontSettingGetOrElse(_.lineSpacing.map(fixLineSpacing), defaultEditorColorsScheme.getLineSpacing)
+  
+  private def fixLineSpacing(lineSpacing: Float) = {
+    if (lineSpacing <= 0)
+      1.0f
+    else
+      lineSpacing
+  }
 
   def setLineSpacing(p1: Float) {
     // do nothing
@@ -195,19 +206,19 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   def getName = name
 
-  def getConsoleFontName = getEditorFontName
+  def getConsoleFontName = fontSettingGetOrElse(_.consoleFontName, getEditorFontName)
 
   def setConsoleFontName(name: String) {
     // do nothing
   }
 
-  def getConsoleFontSize = getEditorFontSize
+  def getConsoleFontSize = fontSettingGetOrElse(_.consoleFontSize, getEditorFontSize)
 
   def setConsoleFontSize(x: Int) {
     // do nothing
   }
 
-  def getConsoleLineSpacing = getLineSpacing
+  def getConsoleLineSpacing = fontSettingGetOrElse(_.consoleLineSpacing, getLineSpacing)
 
   def setConsoleLineSpacing(x: Float) {
     // do nothing
@@ -259,4 +270,24 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 
   initFonts()
+
+  private val highlighterTextAttributes = fixDeprecatedBackgroundColor
+
+  // This setting has been deprecated to usages of HighlighterColors.TEXT attributes
+  private def fixDeprecatedBackgroundColor: Option[TextAttributes] = {
+    getColor(IdeaColorScheme.BACKGROUND_COLOR_NAME).map {
+      deprecatedBackgroundColor => {
+        getAttributes(HighlighterColors.TEXT.getExternalName) match {
+          case None =>
+            new TextAttributes(Color.black, Some(deprecatedBackgroundColor), null, com.intellij.openapi.editor.markup.EffectType.BOXED, Font.PLAIN)
+          case Some(attributes) =>
+            Some(attributes.copy(backgroundColor = Some(deprecatedBackgroundColor)))
+        }
+      }
+    }
+  }
+}
+
+object IdeaColorScheme {
+  private[ideacolor] val BACKGROUND_COLOR_NAME = "BACKGROUND"
 }

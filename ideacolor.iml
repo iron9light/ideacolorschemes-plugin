@@ -28,7 +28,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.ideacolorschemes:commons:0.1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.ideacolorschemes:commons:0.1.5" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.9.1" level="project" />
     <orderEntry type="library" name="Maven: net.liftweb:lift-json_2.9.1:2.4" level="project" />
     <orderEntry type="library" name="Maven: com.thoughtworks.paranamer:paranamer:2.3" level="project" />
