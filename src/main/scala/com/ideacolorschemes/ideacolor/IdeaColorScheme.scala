@@ -97,9 +97,15 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     }
   }.getOrElse(null)
 
-  def getColor(colorKey: ColorKey): Color = getColor(colorKey.getExternalName) match {
-    case None => defaultEditorColorsScheme.getColor(colorKey)
-    case x => x
+  def getColor(colorKey: ColorKey): Color = {
+    if (colorKey == null) {
+      null
+    } else {
+      getColor(colorKey.getExternalName) match {
+        case None => defaultEditorColorsScheme.getColor(colorKey)
+        case x => x
+      }
+    }
   }
 
   def getColor(key: String): Option[Int] = scanIdDeepGet(_.colors.get(key))
@@ -110,6 +116,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 
   def getAttributes(textAttributesKey: TextAttributesKey): TextAttributes = textAttributesKey match {
+    case null => null
     case HighlighterColors.TEXT if highlighterTextAttributes.isDefined => highlighterTextAttributes.get
     case _ =>
       getAttributes(textAttributesKey.getExternalName) match {
