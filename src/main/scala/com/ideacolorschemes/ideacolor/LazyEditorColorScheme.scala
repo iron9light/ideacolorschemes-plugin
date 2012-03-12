@@ -88,4 +88,8 @@ class LazyEditorColorScheme(private[this] val underlying: EditorColorsScheme) ex
   }
 
   lazy val getName = underlying.getName
+
+  override def clone(): AnyRef = {
+    classOf[EditorColorsScheme].getMethod("clone").invoke(underlying)
+  }
 }

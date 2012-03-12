@@ -18,42 +18,24 @@ package com.ideacolorschemes.ideacolor
 
 import com.ideacolorschemes.commons.entities._
 import com.ideacolorschemes.commons.Implicits._
-import scala.xml.{XML, NodeSeq, Node}
+import scala.xml.{NodeSeq, Node}
 import org.jdom.Element
 import com.intellij.openapi.editor.colors.{EditorColorsManager, EditorColorsScheme}
 import java.lang.reflect.Constructor
+import com.intellij.openapi.options.FontSize
+import util.JDomHelper
 
 /**
  * @author il
  */
 
 object ColorSchemeParser {
-  private val DEFAULT_SCHEME_NAME = EditorColorsScheme.DEFAULT_SCHEME_NAME
-
-  private val EDITOR_FONT_NAME = "EDITOR_FONT_NAME"
-  private val CONSOLE_FONT_NAME = "CONSOLE_FONT_NAME"
-  private val SCHEME_NAME = "SCHEME_NAME"
-  private val SCHEME_ELEMENT = "scheme"
-  private val NAME_ATTR = "name"
-  private val VERSION_ATTR = "version"
-  private val DEFAULT_SCHEME_ATTR = "default_scheme"
-  private val PARENT_SCHEME_ATTR = "parent_scheme"
-  private val OPTION_ELEMENT = "option"
-  private val COLORS_ELEMENT = "colors"
-  private val ATTRIBUTES_ELEMENT = "attributes"
-  private val VALUE_ELEMENT = "value"
-  private val BACKGROUND_COLOR_NAME = "BACKGROUND"
-  private val LINE_SPACING = "LINE_SPACING"
-  private val CONSOLE_LINE_SPACING = "CONSOLE_LINE_SPACING"
-  private val EDITOR_FONT_SIZE = "EDITOR_FONT_SIZE"
-  private val CONSOLE_FONT_SIZE = "CONSOLE_FONT_SIZE"
-  private val EDITOR_QUICK_JAVADOC_FONT_SIZE = "EDITOR_QUICK_DOC_FONT_SIZE"
+  import IdeaConstants._
 
   def parse(editorColorsScheme: EditorColorsScheme): Option[ColorScheme] = {
     val element = new Element(SCHEME_ELEMENT)
     editorColorsScheme.writeExternal(element)
-    val source = new org.jdom.transform.JDOMSource(element)
-    val node = XML.load(source.getInputSource)
+    val node = JDomHelper.toNode(element)
     val colorScheme = parse(node).map {
       case (scheme, None) => scheme
       case (scheme, Some(parentSchemeName)) =>
@@ -140,7 +122,7 @@ object ColorSchemeParser {
         case CONSOLE_FONT_NAME =>
           setting: FontSetting => setting.copy(consoleFontName = Some(value))
         case EDITOR_QUICK_JAVADOC_FONT_SIZE =>
-          setting: FontSetting => setting.copy(quickDocFontSize = Some(value.toInt))
+          setting: FontSetting => setting.copy(quickDocFontSize = Some(FontSize.valueOf(value).getSize))
         case _ => setting: FontSetting => setting
       }
     }
@@ -170,13 +152,6 @@ object ColorSchemeParser {
       attribute <- tryReadAttribute(value)
     } yield (name, attribute)).toMap
   }
-
-  private val FOREGROUND = "FOREGROUND"
-  private val BACKGROUND = "BACKGROUND"
-  private val FONT_TYPE = "FONT_TYPE"
-  private val EFFECT_COLOR = "EFFECT_COLOR"
-  private val EFFECT_TYPE = "EFFECT_TYPE"
-  private val ERROR_STRIPE_COLOR = "ERROR_STRIPE_COLOR"
 
   def tryReadAttribute(node: Node): Option[TextAttributesObject] = {
     val processes: Seq[TextAttributesObject => TextAttributesObject] = for {

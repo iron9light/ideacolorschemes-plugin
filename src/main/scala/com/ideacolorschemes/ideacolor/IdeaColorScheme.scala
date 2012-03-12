@@ -28,7 +28,9 @@ import com.intellij.openapi.editor.HighlighterColors
 import com.ideacolorschemes.commons.Implicits._
 import com.intellij.openapi.options.FontSize
 import java.util.EnumMap
-import util.{Loggable, IdeaUtil}
+import scala.xml.NodeSeq
+import util.{JDomHelper, Loggable, IdeaUtil}
+import reflect.BeanProperty
 
 /**
  * @author il
@@ -73,13 +75,25 @@ trait ColorSchemeUtil {
   def scanIdDeepGet[T](func: ColorScheme => Option[T])(implicit ids: List[ColorSchemeId], manager: ColorSchemeManager) = scanIdGet(deepGet(func, _)(manager))
 
   def scanGet[T](func: ColorScheme => Option[T])(implicit ids: List[ColorSchemeId], manager: ColorSchemeManager) = scanIdGet(manager.get(_).map(func).getOrElse(None))
+  
+  def scanIdDeepFold[K, V](func: ColorScheme => Map[K, V])(implicit ids: List[ColorSchemeId], manager: ColorSchemeManager) = {
+    ids.foldRight(Map.empty[K, V])(deepFold(func, _) ++ _)
+  }
+  
+  def deepFold[K, V](func: ColorScheme => Map[K, V], id: ColorSchemeId)(implicit manager: ColorSchemeManager): Map[K, V] = {
+    manager.get(id) match {
+      case Some(scheme) =>
+        func(scheme) ++ scheme.dependencies.flatMap(_.find(_.target == id.target)).map(deepFold(func, _)).getOrElse(Map.empty)
+      case None => Map.empty
+    }
+  }
 }
 
 class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with Loggable {
 
   private val defaultEditorColorsScheme = EditorColorsManager.getInstance.getScheme(EditorColorsManager.DEFAULT_SCHEME_NAME)
 
-  implicit protected def colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
+  implicit protected val colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
 
   implicit private def toColor(i: Option[Int]) = i.filter(_ >= 0).map(new Color(_)).getOrElse(null)
 
@@ -155,23 +169,26 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 
   def getQuickDocFontSize = fontSettingGetOrElse(_.quickDocFontSize.map {
-    size => {
-      def round(fontSize: FontSize): FontSize = {
-        val larger = fontSize.larger()
-        if (fontSize == larger)
-          fontSize
-        else if (larger.getSize < size)
-          round(larger)
-        else {
-          val delta1 = size - fontSize.getSize
-          val delta2 = larger.getSize - size
-          if (delta1.abs < delta2.abs) fontSize else larger
-        }
-      }
-
-      round(FontSize.values()(0))
-    }
+    toFontSize
   }, defaultEditorColorsScheme.getQuickDocFontSize)
+  
+  private def toFontSize(size: Int): FontSize = {
+    @tailrec
+    def round(fontSize: FontSize): FontSize = {
+      val larger = fontSize.larger()
+      if (fontSize == larger)
+        fontSize
+      else if (larger.getSize < size)
+        round(larger)
+      else {
+        val delta1 = size - fontSize.getSize
+        val delta2 = larger.getSize - size
+        if (delta1.abs < delta2.abs) fontSize else larger
+      }
+    }
+
+    round(FontSize.values()(0))
+  }
 
   def setQuickDocFontSize(p1: FontSize) {
     // do nothing
@@ -205,10 +222,64 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   def readExternal(p1: Element) {
     // do nothing
   }
+  
+  override def clone(): AnyRef = {
+    new NameChangableIdeaColorScheme(name, colorSchemeIds)
+  }
 
-  def writeExternal(p1: Element) {
-    logger.info("writeExternal")
-    throw new WriteExternalException
+  def writeExternal(parentNode: Element) {
+    JDomHelper.build(toXml, parentNode)
+  }
+
+  import IdeaConstants._
+  
+  private def toXml = {
+    <scheme name={name} version="0" parent_scheme={DEFAULT_SCHEME_NAME}>
+      {fontSettingNode(_.lineSpacing.map(fixLineSpacing), LINE_SPACING)}
+      {fontSettingNode(_.editorFontSize, EDITOR_FONT_SIZE)}
+      {fontSettingNode(_.consoleFontName, CONSOLE_FONT_NAME)}
+      {fontSettingNode(_.consoleFontSize, CONSOLE_FONT_SIZE)}
+      {fontSettingNode(_.consoleLineSpacing.map(fixLineSpacing), CONSOLE_LINE_SPACING)}
+      {fontSettingGet(_.quickDocFontSize.map(toFontSize)) match {
+      case Some(x) if x != FontSize.SMALL =>
+        <option name={EDITOR_QUICK_JAVADOC_FONT_SIZE} value={x.toString}/>
+      case _ => NodeSeq.Empty
+      }}
+      {fontSettingNode(_.editorFontName, EDITOR_FONT_NAME)}
+      <colors>{colorsXml}</colors>
+      <attributes>{attributesXml}</attributes>
+    </scheme>
+  }
+  
+  private def toColorString(c: Int) = {
+    if (c < 0)
+      ""
+    else
+      Integer.toString(c & 0xFFFFFF, 16)
+  }
+  
+  private def colorsXml = {
+    scanIdDeepFold(_.colors).toList.sortBy(_._1).map {
+      case (k, v) => {
+        <option name={k} value={toColorString(v)} />
+      }
+    }
+  }
+  
+  private def attributesXml = {
+    scanIdDeepFold(_.attributes).toList.sortBy(_._1).map {
+      case (k, v) =>
+        val element = new Element(VALUE_ELEMENT)
+        Some(v).writeExternal(element)
+        <option name={k}>{JDomHelper.toNode(element)}</option>
+    }
+  }
+  
+  private def fontSettingNode[T](func: FontSetting => Option[T], nodeName: String) = {
+    fontSettingGet(func).map{
+      case Some(x) => <option name={nodeName} value={x.toString}/>
+      case None => NodeSeq.Empty
+    }
   }
 
   def getName = name
@@ -225,7 +296,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     // do nothing
   }
 
-  def getConsoleLineSpacing = fontSettingGetOrElse(_.consoleLineSpacing, getLineSpacing)
+  def getConsoleLineSpacing = fontSettingGetOrElse(_.consoleLineSpacing.map(fixLineSpacing), getLineSpacing)
 
   def setConsoleLineSpacing(x: Float) {
     // do nothing
@@ -282,7 +353,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   // This setting has been deprecated to usages of HighlighterColors.TEXT attributes
   private def fixDeprecatedBackgroundColor: Option[TextAttributes] = {
-    getColor(IdeaColorScheme.BACKGROUND_COLOR_NAME).map {
+    getColor(BACKGROUND_COLOR_NAME).map {
       deprecatedBackgroundColor => {
         getAttributes(HighlighterColors.TEXT.getExternalName) match {
           case None =>
@@ -295,6 +366,10 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
 }
 
-object IdeaColorScheme {
-  private[ideacolor] val BACKGROUND_COLOR_NAME = "BACKGROUND"
+class NameChangableIdeaColorScheme(var myName: String, colorSchemeIds: List[ColorSchemeId]) extends IdeaColorScheme(myName, colorSchemeIds) {
+  override def getName = myName
+  
+  override def setName(name: String) {
+    myName = name
+  }
 }
