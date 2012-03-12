@@ -23,6 +23,10 @@
   <change-notes><![CDATA[
       <ul>
 
+      <dt><b>0.1.6 (2012-03-09)</b></dt>
+      <li>Bug fix: throw NullPointerException sometimes</li>
+      <li>Load local cached schemes first</li>
+
       <dt><b>0.1.5 (2012-03-09)</b></dt>
       <li>Support console font</li>
       <li>Bug fix: some colors upload and display incorrectly</li>
@@ -48,7 +52,7 @@
 
       </ul>
   ]]></change-notes>
-  <version>0.1.5</version>
+  <version>0.1.6</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 
