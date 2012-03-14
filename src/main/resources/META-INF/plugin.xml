@@ -23,6 +23,9 @@
   <change-notes><![CDATA[
       <ul>
 
+      <dt><b>0.1.7 (in progress)</b></dt>
+      <li>Support "Save as"</li>
+
       <dt><b>0.1.6 (2012-03-09)</b></dt>
       <li>Bug fix: throw NullPointerException sometimes</li>
       <li>Load local cached schemes first</li>
