@@ -27,10 +27,12 @@ import com.intellij.openapi.util.WriteExternalException
 import com.intellij.openapi.editor.HighlighterColors
 import com.ideacolorschemes.commons.Implicits._
 import com.intellij.openapi.options.FontSize
+import ex.DefaultColorSchemesManager
 import java.util.EnumMap
 import scala.xml.NodeSeq
 import util.{JDomHelper, Loggable, IdeaUtil}
 import reflect.BeanProperty
+import com.intellij.openapi.editor.colors.impl.EditorColorsSchemeImpl
 
 /**
  * @author il
@@ -219,19 +221,23 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     // do nothing
   }
 
+  import IdeaConstants._
+
   def readExternal(p1: Element) {
     // do nothing
   }
   
   override def clone(): AnyRef = {
-    new NameChangableIdeaColorScheme(name, colorSchemeIds)
+    val element = new Element(SCHEME_ELEMENT)
+    writeExternal(element)
+    val cloneScheme = new EditorColorsSchemeImpl(null, DefaultColorSchemesManager.getInstance)
+    cloneScheme.readExternal(element)
+    cloneScheme
   }
 
   def writeExternal(parentNode: Element) {
     JDomHelper.build(toXml, parentNode)
   }
-
-  import IdeaConstants._
   
   private def toXml = {
     <scheme name={name} version="0" parent_scheme={DEFAULT_SCHEME_NAME}>
@@ -276,7 +282,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   }
   
   private def fontSettingNode[T](func: FontSetting => Option[T], nodeName: String) = {
-    fontSettingGet(func).map{
+    fontSettingGet(func) match {
       case Some(x) => <option name={nodeName} value={x.toString}/>
       case None => NodeSeq.Empty
     }
@@ -363,13 +369,5 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
         }
       }
     }
-  }
-}
-
-class NameChangableIdeaColorScheme(var myName: String, colorSchemeIds: List[ColorSchemeId]) extends IdeaColorScheme(myName, colorSchemeIds) {
-  override def getName = myName
-  
-  override def setName(name: String) {
-    myName = name
   }
 }

@@ -8,7 +8,7 @@ import scala.xml._
  */
 object JDomHelper {
   def build(elem: Elem, jElem: JElement): JElement = {
-    elem.attributes.foreach{
+    elem.attributes.foreach {
       attr => jElem.setAttribute(attr.key, attr.value.mkString)
     }
 
@@ -16,18 +16,18 @@ object JDomHelper {
       x =>
         jElem.addContent(x match {
           case child: Elem =>
-            jElem.addContent(build(child, new JElement(child.label)))
+            build(child, new JElement(child.label))
           case child: Atom[_] =>
-            jElem.addContent(new JText(child.text))
+            new JText(child.text)
           case child: Comment =>
-            jElem.addContent(new JComment(child.commentText))
+            new JComment(child.commentText)
           case child: EntityRef =>
-            jElem.addContent(new JEntityRef(child.entityName))
+            new JEntityRef(child.entityName)
           case child: ProcInstr =>
-            jElem.addContent(new JProcessingInstruction(child.target, child.proctext))
+            new JProcessingInstruction(child.target, child.proctext)
         })
     }
-    
+
     jElem
   }
 
