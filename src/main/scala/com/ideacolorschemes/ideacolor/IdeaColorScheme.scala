@@ -91,27 +91,11 @@ trait ColorSchemeUtil {
   }
 }
 
-class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with Loggable {
+class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with ColorSchemeConversions with Loggable {
 
   private val defaultEditorColorsScheme = EditorColorsManager.getInstance.getScheme(EditorColorsManager.DEFAULT_SCHEME_NAME)
 
   implicit protected val colorSchemeManager: ColorSchemeManager = service[ColorSchemeManager]
-
-  implicit private def toColor(i: Option[Int]) = i.filter(_ >= 0).map(new Color(_)).getOrElse(null)
-
-  implicit private def toEffectType(e: Option[EffectType.Value]) = e.map(x => {
-    JEffectType.values()(x.id)
-  }).getOrElse(null)
-
-  implicit private def toFontTypeInt(f: Option[FontType.Value]) = f.map(_.id).getOrElse(0)
-
-  implicit private def toTextAttributes(x: Option[TextAttributesObject]) = x.map {
-    o => {
-      val textAttributes = new TextAttributes(o.foregroundColor, o.backgroundColor, o.effectColor, o.effectType, o.fontType)
-      textAttributes.setErrorStripeColor(o.errorStripeColor)
-      textAttributes
-    }
-  }.getOrElse(null)
 
   def getColor(colorKey: ColorKey): Color = {
     if (colorKey == null) {
@@ -162,7 +146,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     case Some(fontSetting) => func(fontSetting)
   })
 
-  def fontSettingGetOrElse[T](func: FontSetting => Option[T], default: => T) = fontSettingGet(func).getOrElse(default)
+  def fontSettingGetOrElse[T](func: FontSetting => Option[T], default: => T)(implicit fontSettingGet: (FontSetting => Option[T]) => Option[T] = (x: FontSetting => Option[T]) => fontSettingGet(x)) = fontSettingGet(func).getOrElse(default)
 
   def getEditorFontSize = fontSettingGetOrElse(_.editorFontSize, defaultEditorColorsScheme.getEditorFontSize)
 
@@ -173,24 +157,6 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   def getQuickDocFontSize = fontSettingGetOrElse(_.quickDocFontSize.map {
     toFontSize
   }, defaultEditorColorsScheme.getQuickDocFontSize)
-  
-  private def toFontSize(size: Int): FontSize = {
-    @tailrec
-    def round(fontSize: FontSize): FontSize = {
-      val larger = fontSize.larger()
-      if (fontSize == larger)
-        fontSize
-      else if (larger.getSize < size)
-        round(larger)
-      else {
-        val delta1 = size - fontSize.getSize
-        val delta2 = larger.getSize - size
-        if (delta1.abs < delta2.abs) fontSize else larger
-      }
-    }
-
-    round(FontSize.values()(0))
-  }
 
   def setQuickDocFontSize(p1: FontSize) {
     // do nothing
@@ -202,7 +168,10 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     // do nothing
   }
 
-  def getFont(key: EditorFontType) = myFonts.get(key)
+  def getFont(key: EditorFontType) = {
+    runInitFonts
+    myFonts.get(key)
+  }
 
   def setFont(key: EditorFontType, font: Font) {
     myFonts.put(key, font)
@@ -210,7 +179,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
 
   def getLineSpacing = fontSettingGetOrElse(_.lineSpacing.map(fixLineSpacing), defaultEditorColorsScheme.getLineSpacing)
   
-  private def fixLineSpacing(lineSpacing: Float) = {
+  protected def fixLineSpacing(lineSpacing: Float) = {
     if (lineSpacing <= 0)
       1.0f
     else
@@ -239,19 +208,19 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     JDomHelper.build(toXml, parentNode)
   }
   
-  private def toXml = {
+  protected def toXml(implicit fontSettingGet: {def apply[T](func: FontSetting => Option[T]): Option[T]} = new {def apply[T](func: FontSetting => Option[T]) = fontSettingGet(func)}) = {
     <scheme name={name} version="0" parent_scheme={DEFAULT_SCHEME_NAME}>
-      {fontSettingNode(_.lineSpacing.map(fixLineSpacing), LINE_SPACING)}
-      {fontSettingNode(_.editorFontSize, EDITOR_FONT_SIZE)}
-      {fontSettingNode(_.consoleFontName, CONSOLE_FONT_NAME)}
-      {fontSettingNode(_.consoleFontSize, CONSOLE_FONT_SIZE)}
-      {fontSettingNode(_.consoleLineSpacing.map(fixLineSpacing), CONSOLE_LINE_SPACING)}
+      {fontSettingNode(_.lineSpacing.map(fixLineSpacing), LINE_SPACING)(fontSettingGet.apply)}
+      {fontSettingNode(_.editorFontSize, EDITOR_FONT_SIZE)(fontSettingGet.apply)}
+      {fontSettingNode(_.consoleFontName, CONSOLE_FONT_NAME)(fontSettingGet.apply)}
+      {fontSettingNode(_.consoleFontSize, CONSOLE_FONT_SIZE)(fontSettingGet.apply)}
+      {fontSettingNode(_.consoleLineSpacing.map(fixLineSpacing), CONSOLE_LINE_SPACING)(fontSettingGet.apply)}
       {fontSettingGet(_.quickDocFontSize.map(toFontSize)) match {
       case Some(x) if x != FontSize.SMALL =>
         <option name={EDITOR_QUICK_JAVADOC_FONT_SIZE} value={x.toString}/>
       case _ => NodeSeq.Empty
       }}
-      {fontSettingNode(_.editorFontName, EDITOR_FONT_NAME)}
+      {fontSettingNode(_.editorFontName, EDITOR_FONT_NAME)(fontSettingGet.apply)}
       <colors>{colorsXml}</colors>
       <attributes>{attributesXml}</attributes>
     </scheme>
@@ -281,7 +250,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     }
   }
   
-  private def fontSettingNode[T](func: FontSetting => Option[T], nodeName: String) = {
+  private def fontSettingNode[T](func: FontSetting => Option[T], nodeName: String)(implicit fontSettingGet: (FontSetting => Option[T]) => Option[T] = (x: FontSetting => Option[T]) => fontSettingGet(x)) = {
     fontSettingGet(func) match {
       case Some(x) => <option name={nodeName} value={x.toString}/>
       case None => NodeSeq.Empty
@@ -317,7 +286,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
   private val myFonts = new EnumMap[EditorFontType, Font](classOf[EditorFontType])
   private var myFallbackFontName: Option[String] = None
 
-  private def initFonts() {
+  protected def initFonts() {
     var editorFontName = getEditorFontName
     val editorFontSize = getEditorFontSize
 
@@ -353,9 +322,9 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     myFonts.put(EditorFontType.CONSOLE_BOLD_ITALIC, consoleBoldItalicFont)
   }
 
-  initFonts()
+  private[this] lazy val runInitFonts = initFonts()
 
-  private val highlighterTextAttributes = fixDeprecatedBackgroundColor
+  private lazy val highlighterTextAttributes = fixDeprecatedBackgroundColor
 
   // This setting has been deprecated to usages of HighlighterColors.TEXT attributes
   private def fixDeprecatedBackgroundColor: Option[TextAttributes] = {

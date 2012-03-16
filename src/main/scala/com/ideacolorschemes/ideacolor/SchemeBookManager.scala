@@ -204,7 +204,7 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
     }
   }
 
-  private def book2ideaScheme(book: SchemeBook) = new LazyEditorColorScheme(new IdeaColorScheme(ideaSchemeName(book.name), book.schemeIds))
+  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(ideaSchemeName(book.name), book.schemeIds) with CachedEditorColorsScheme with EditableIdeaColorScheme
 }
 
 trait IdeaSchemeNameUtil {

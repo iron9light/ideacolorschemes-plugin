@@ -17,14 +17,13 @@
 package com.ideacolorschemes.ideacolor
 
 import collection.JavaConversions._
-import java.awt.Color
 import com.intellij.application.options.colors.ColorSettingsUtil
 import com.ideacolorschemes.commons.entities._
 import com.ideacolorschemes.commons.Implicits._
 import com.intellij.openapi.editor.colors.{ColorKey, EditorColorsManager, EditorColorsScheme}
 import com.intellij.openapi.options.colors.ColorSettingsPage
 
-object DefaultColorSchemeExtractor {
+object DefaultColorSchemeExtractor extends ColorSchemeConversions {
   def extract(page: ColorSettingsPage) = {
     val id = extractId(page)
 
@@ -72,7 +71,7 @@ object DefaultColorSchemeExtractor {
     (for {
       colorDescriptor <- page.getColorDescriptors
       color <- getDefaultColor(colorDescriptor.getKey)
-    } yield (colorDescriptor.getKey.getExternalName, color2int(color))).toMap
+    } yield (colorDescriptor.getKey.getExternalName, toInt(color))).toMap
   }
 
   def extractAttributes(page: ColorSettingsPage) = {
@@ -83,21 +82,7 @@ object DefaultColorSchemeExtractor {
     } yield {
       val key = descriptor.getKey.getExternalName
 
-      val foregroundColor = Option(textAttributes.getForegroundColor).map(color2int)
-      val backgroundColor = Option(textAttributes.getBackgroundColor).map(color2int)
-      val effectColor = Option(textAttributes.getEffectColor).map(color2int)
-      val effectType = effectColor.map {
-        _ => EffectType(textAttributes.getEffectType.ordinal())
-      }
-      val fontType = textAttributes.getFontType match {
-        case 0 => FontType.PLAIN
-        case 1 => FontType.BOLD
-        case 2 => FontType.ITALIC
-        case 3 => FontType.BOLD_ITALIC
-        case _ => FontType.PLAIN
-      }
-      val errorStripeColor = Option(textAttributes.getErrorStripeColor).map(color2int)
-      (key, TextAttributesObject(foregroundColor, backgroundColor, effectColor, effectType, fontType, errorStripeColor))
+      (key, toTextAttributesObject(textAttributes))
     }).toMap
   }
 
@@ -111,6 +96,4 @@ object DefaultColorSchemeExtractor {
     val consoleLineSpacing = Some(scheme.getConsoleLineSpacing)
     FontSetting(editorFontName, editorFontSize, lineSpacing, quickDocFontSize, consoleFontName, consoleFontSize, consoleLineSpacing)
   }
-
-  def color2int(color: Color) = color.getRGB & 0xFFFFFF
 }
