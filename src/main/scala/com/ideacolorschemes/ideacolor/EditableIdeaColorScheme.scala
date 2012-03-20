@@ -13,7 +13,26 @@ import util.JDomHelper
  * @author il
  */
 trait EditableIdeaColorScheme extends IdeaColorScheme {
-  private[this] var changedScheme = ColorScheme(ColorSchemeId("", name, Version.NoVersion, ""), Some(colorSchemeIds))
+  private[this] var changedScheme = {
+    val initScheme = initChangedScheme
+    initScheme.copy(id = initScheme.id.copy(name = name), dependencies = Some(colorSchemeIds))
+  }
+  
+  def initChangedScheme = ColorScheme(ColorSchemeId("", name, Version.NoVersion, ""), Some(colorSchemeIds))
+  
+  def change = {
+    val scheme = if (changedScheme.fontSetting == Some(FontSetting())) {
+      changedScheme.copy(fontSetting = None)
+    } else {
+      changedScheme
+    }
+    
+    if (scheme.fontSetting.isEmpty && scheme.attributes.isEmpty && scheme.colors.isEmpty) {
+      None
+    } else {
+      Some(scheme)
+    }
+  }
 
   override def getAttributes(key: TextAttributesKey) = {
     changedScheme.attributes.get(key.getExternalName) match {

@@ -22,7 +22,8 @@ import collection.JavaConversions._
 import java.util.Date
 import org.fusesource.hawtdb.api.BTreeIndexFactory
 import com.intellij.openapi.Disposable
-import com.ideacolorschemes.commons.bson.{BsonParser, ColorSchemeIdParser}
+import com.ideacolorschemes.commons.bson.{BsonParser, ColorSchemeIdParser, ColorSchemeParser => ColorSchemeBsonParser}
+import com.ideacolorschemes.commons.entities.ColorScheme
 
 /**
  * @author il
@@ -73,16 +74,30 @@ class HawtSchemeBookManager extends SchemeBookManager with Disposable with HawtD
     factory.close()
   }
 
+  def save(name: String, change: Option[ColorScheme]) {
+    synchronized {
+      Option(db.get(name)) match {
+        case Some(book) if book.change != change =>
+          db.put(name, book.copy(change = change))
+        case _ =>
+      }
+    }
+  }
+
   def getComponentName = "ideacolor.SchemeBookManager"
 }
 
 object SchemeBookCodec extends CodecBase[SchemeBook] with BsonParser[SchemeBook] {
   def toBson(book: SchemeBook) = {
-    val SchemeBook(name, schemeIds, timestamp) = book
+    val SchemeBook(name, schemeIds, timestamp, change) = book
     val b = new BasicBSONObject()
     .append("name", name)
     .append("schemeIds", schemeIds.flatMap(ColorSchemeIdParser.toBson(_)).toArray)
     .append("timestamp", timestamp)
+    
+    change.foreach {
+      x => b.append("change", ColorSchemeBsonParser.toBson(x).get)
+    }
     
     Some(b)
   }
@@ -91,8 +106,9 @@ object SchemeBookCodec extends CodecBase[SchemeBook] with BsonParser[SchemeBook]
     val name = bson.get("name").asInstanceOf[String]
     val schemeIds = bson.get("schemeIds").asInstanceOf[java.util.List[_]].toList.map(ColorSchemeIdParser.fromBson)
     val timestamp = bson.get("timestamp").asInstanceOf[Date]
+    val change = Option(bson.get("change")).map(ColorSchemeBsonParser.fromBson)
 
-    SchemeBook(name, schemeIds, timestamp)
+    SchemeBook(name, schemeIds, timestamp, change)
   }
   
   def toBytes(o: SchemeBook) = {

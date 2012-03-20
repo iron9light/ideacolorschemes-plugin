@@ -17,7 +17,7 @@
 package com.ideacolorschemes.ideacolor
 
 import reflect.BeanProperty
-import com.ideacolorschemes.commons.entities.ColorSchemeId
+import com.ideacolorschemes.commons.entities.{ColorScheme, ColorSchemeId}
 import java.util.Date
 import com.ideacolorschemes.commons.WithTimestamp
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsManager}
@@ -34,7 +34,7 @@ trait BookSetting {
   var currentBook: String = _
 }
 
-case class SchemeBook(name: String, schemeIds: List[ColorSchemeId], timestamp: Date) extends WithTimestamp
+case class SchemeBook(name: String, schemeIds: List[ColorSchemeId], timestamp: Date, change: Option[ColorScheme] = None) extends WithTimestamp
 
 sealed abstract class ModifyBook {
   def name: String
@@ -97,6 +97,18 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
       true
     }
   }
+
+  def save()(implicit project: Project = ProjectManager.getInstance.getDefaultProject) {
+    editorColorsManager.getAllSchemes.foreach {
+      case editableScheme: EditableIdeaColorScheme =>
+        ideaRun {
+          save(editableScheme.name, editableScheme.change)
+        }
+      case _ =>
+    }
+  }
+  
+  def save(name: String, change: Option[ColorScheme])
 
   private def getUpdateModifies = {
     SiteServices.schemeBookNames match {
@@ -204,17 +216,21 @@ trait SchemeBookManager extends Loggable with IdeaUtil with IdeaSchemeNameUtil {
     }
   }
 
-  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(ideaSchemeName(book.name), book.schemeIds) with CachedEditorColorsScheme with EditableIdeaColorScheme
+  private def book2ideaScheme(book: SchemeBook) = new IdeaColorScheme(book.name, book.schemeIds) with CachedEditorColorsScheme with EditableIdeaColorScheme {
+    override def initChangedScheme = book.change.getOrElse(super.initChangedScheme)
+  }
 }
 
 trait IdeaSchemeNameUtil {
   private[this] final val capital = 0x7f.toChar.toString
   
   implicit def convertEditorColorsScheme(scheme: EditorColorsScheme) = new {
-    def name = scheme.getName.substring(capital.length)
+    def name = bookName(scheme.getName)
   }
   
   def isBook(scheme: EditorColorsScheme) = scheme.getName.startsWith(capital)
   
   def ideaSchemeName(name: String) = capital + name
+
+  def bookName(name: String) = name.substring(capital.length)
 }

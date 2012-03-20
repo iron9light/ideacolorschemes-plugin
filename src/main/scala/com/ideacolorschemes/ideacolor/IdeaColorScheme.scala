@@ -91,7 +91,7 @@ trait ColorSchemeUtil {
   }
 }
 
-class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with ColorSchemeConversions with Loggable {
+class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorSchemeId]) extends EditorColorsScheme with ColorSchemeUtil with IdeaUtil with ColorSchemeConversions with IdeaSchemeNameUtil with Loggable {
 
   private val defaultEditorColorsScheme = EditorColorsManager.getInstance.getScheme(EditorColorsManager.DEFAULT_SCHEME_NAME)
 
@@ -257,7 +257,7 @@ class IdeaColorScheme(val name: String, implicit val colorSchemeIds: List[ColorS
     }
   }
 
-  def getName = name
+  def getName = ideaSchemeName(name)
 
   def getConsoleFontName = fontSettingGetOrElse(_.consoleFontName, getEditorFontName)
 

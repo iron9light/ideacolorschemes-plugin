@@ -18,7 +18,7 @@ package com.ideacolorschemes.ideacolor
 
 import util.{IdeaUtil, Loggable}
 import com.intellij.openapi.editor.colors.{EditorColorsScheme, EditorColorsListener}
-import com.intellij.openapi.components.ApplicationComponent
+import com.intellij.openapi.components.{SettingsSavingComponent, ApplicationComponent}
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager}
 import com.intellij.openapi.project.{ProjectManager, Project}
@@ -28,7 +28,7 @@ import com.intellij.ide.AppLifecycleListener
 /**
  * @author il
  */
-class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with Loggable with IdeaUtil {
+class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with Loggable with IdeaUtil with SettingsSavingComponent {
   val schemeBookManager = service[SchemeBookManager]
 
   import schemeBookManager._
@@ -64,6 +64,10 @@ class SchemeBookComponent extends ApplicationComponent with UserManager.Sub with
   }
 
   def getComponentName = "ideacolor.SchemeBookManager"
+
+  def save() {
+    schemeBookManager.save()
+  }
 
   def notify(pub: UserManager.Pub, event: String) {
     reset()
