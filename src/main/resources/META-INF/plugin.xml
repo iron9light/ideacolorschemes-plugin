@@ -23,8 +23,9 @@
   <change-notes><![CDATA[
       <ul>
 
-      <dt><b>0.1.7 (in progress)</b></dt>
+      <dt><b>0.2.0 (in progress)</b></dt>
       <li>Support "Save as"</li>
+      <li>It's editable and can upload changes.</li>
 
       <dt><b>0.1.6 (2012-03-09)</b></dt>
       <li>Bug fix: throw NullPointerException sometimes</li>
@@ -55,7 +56,7 @@
 
       </ul>
   ]]></change-notes>
-  <version>0.1.6</version>
+  <version>0.2.0</version>
   <vendor url="http://ideacolorschemes.com" email="ideacolorschemes@gmail.com" logo="">ideacolorschemes.com</vendor>
   <idea-version since-build="111.63"/>
 
